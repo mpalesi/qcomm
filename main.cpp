@@ -353,12 +353,21 @@ Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
 bool checkCommandLine(int argc, char* argv[],
 		      string& circuitfn, string& architecturefn, string& parametersfn)
 {
-  if (argc != 4)
+  if (argc != 7)
     return false;
 
-  circuitfn      = string(argv[1]);
-  architecturefn = string(argv[2]);
-  parametersfn   = string(argv[3]);
+  for (int i=1; i<argc; i++)
+    {
+      string arg = argv[i];
+      if (arg == "-a")
+	architecturefn = string(argv[++i]);
+      else if (arg == "-c")
+	circuitfn = string(argv[++i]);
+      else if (arg == "-p")
+	parametersfn = string(argv[++i]);
+      else
+	return false;
+    }  
 
   return true;
 }
@@ -370,7 +379,7 @@ int main(int argc, char* argv[])
 
   if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn))
     {
-      cout << "use " << argv[0] << " <circuit> <architecture> <parameters>" << endl;
+      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters>" << endl;
       assert(false);
     }
   
