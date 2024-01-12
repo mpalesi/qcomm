@@ -1,0 +1,4 @@
+mesh_x 2
+mesh_y 2
+qubits_per_core 10
+ltm_ports 2

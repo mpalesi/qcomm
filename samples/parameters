@@ -1,0 +1,6 @@
+gate_delay 1e-12
+hop_delay 1e-9
+epr_delay 1e-6  
+dist_delay 0.01e-9
+pre_delay 390e-9
+post_delay 30e-9
