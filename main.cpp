@@ -305,10 +305,10 @@ Statistics Simulate(const ParallelGates& pgates, const Architecture& architectur
 		    const Parameters& parameters, Mapping& mapping, Cores& cores)
 {
   ParallelGates lgates, rgates;
-  
+
   splitLocalRemoteGates(pgates, mapping, lgates, rgates);  
 
-  assert(rgates.empty() || lgates.empty());
+  assert(!rgates.empty() || !lgates.empty());
 
   Statistics stats_local = LocalExecution(lgates, parameters);
   Statistics stats_remote = RemoteExecution(architecture, parameters, rgates, mapping, cores);
