@@ -21,6 +21,7 @@ struct Architecture
 
   void updateMeshX(const int nv);
   void updateMeshY(const int nv);
+  void updateQubitsPerCore(const int nv);
   void updateLTMPorts(const int nv);
   
 };

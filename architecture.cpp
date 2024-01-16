@@ -65,6 +65,11 @@ void Architecture::updateMeshY(const int nv)
   number_of_cores = mesh_x * mesh_y;
 }
 
+void Architecture::updateQubitsPerCore(const int nv)
+{
+  qubits_per_core = nv;
+}
+
 void Architecture::updateLTMPorts(const int nv)
 {
   ltm_ports = nv;

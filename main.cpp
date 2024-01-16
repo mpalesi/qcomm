@@ -392,8 +392,10 @@ void overrideParameters(const map<string,string>& params_override,
 
       if (param == "mesh_x")
 	arch.updateMeshX(stoi(value));
-      else if (param == "mesh_y")
+      else if (param == "mesh_y")	
 	arch.updateMeshY(stoi(value));
+      else if (param == "qubits_per_core")
+	arch.updateQubitsPerCore(stoi(value));
       else if (param == "ltm_ports")
 	arch.updateLTMPorts(stoi(value));
       else if (param == "hop_delay")
@@ -412,7 +414,7 @@ int main(int argc, char* argv[])
   if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn, params_override))
     {
       cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl
-	   << "(supported override parameters -o: mesh_x, mesh_y, ltm_ports, hop_delay)" << endl;
+	   << "(supported override parameters -o: mesh_x, mesh_y, qubits_per_core, ltm_ports, hop_delay)" << endl;
       
       assert(false);
     }
