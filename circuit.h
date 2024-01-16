@@ -14,7 +14,7 @@ struct Circuit
 
   Circuit(): number_of_qubits(0), number_of_gates(0), number_of_stages(0) {}
 
-  void display();
+  void display(const bool verbose = true);
 
   bool readFromFile(const string& file_name);
 

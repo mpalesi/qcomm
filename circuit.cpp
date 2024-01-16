@@ -8,16 +8,17 @@
 
 using namespace std;
 
-void Circuit::display()
+void Circuit::display(const bool verbose)
 {
   cout << endl
        << "*** Circuit ***" << endl
        << "number_of_qubits: " << number_of_qubits << endl
        << "number_of_gates: " << number_of_gates << endl
        << "number_of_stages: " << number_of_stages << endl;
-  
-  for (const auto& parallel_gates : circuit)
-    displayGates(parallel_gates, true);
+
+  if (verbose)
+    for (const auto& parallel_gates : circuit)
+      displayGates(parallel_gates, true);
 }
 
 

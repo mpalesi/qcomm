@@ -8,9 +8,9 @@ void Architecture::display() const
 {
   cout << endl
        << "*** Architecture ***" << endl
-       << "mesh_x: " << mesh_x << endl
-       << "mesh_y: " << mesh_y << endl
-       << "qubits_per_core: " << qubits_per_core << endl
+       << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
+       << "qubits_per_core: " << qubits_per_core
+       << " (total physical qubits: " << mesh_x * mesh_y * qubits_per_core << ")" << endl
        << "ltm_ports = " << ltm_ports
        << endl;
 }
