@@ -51,3 +51,9 @@ bool Parameters::readFromFile(const string& file_name)
   
   return true;
 }
+
+void Parameters::updateHopDelay(const double nv)
+{
+  hop_delay = nv;
+}
+

@@ -52,3 +52,20 @@ bool Architecture::readFromFile(const string& file_name)
 
   return true;
 }
+
+void Architecture::updateMeshX(const int nv)
+{
+  mesh_x = nv;
+  number_of_cores = mesh_x * mesh_y;
+}
+
+void Architecture::updateMeshY(const int nv)
+{
+  mesh_y = nv;
+  number_of_cores = mesh_x * mesh_y;
+}
+
+void Architecture::updateLTMPorts(const int nv)
+{
+  ltm_ports = nv;
+}

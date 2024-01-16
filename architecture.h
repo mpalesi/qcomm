@@ -18,6 +18,11 @@ struct Architecture
   void display() const;
   
   bool readFromFile(const string& file_name);
+
+  void updateMeshX(const int nv);
+  void updateMeshY(const int nv);
+  void updateLTMPorts(const int nv);
+  
 };
 
 #endif

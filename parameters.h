@@ -19,6 +19,8 @@ struct Parameters
   void display() const;
 
   bool readFromFile(const string& file_name);
+
+  void updateHopDelay(const double nv);
 };
 
 #endif

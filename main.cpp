@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 #include <set>
+#include <map>
 #include <cassert>
 #include <limits>
 #include <random>
@@ -351,11 +352,14 @@ Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
 
 // ----------------------------------------------------------------------
 bool checkCommandLine(int argc, char* argv[],
-		      string& circuitfn, string& architecturefn, string& parametersfn)
+		      string& circuitfn, string& architecturefn, string& parametersfn,
+		      map<string,string>& params_override)
 {
-  if (argc != 7)
+  if (argc < 7)
     return false;
 
+  params_override.clear();
+  
   for (int i=1; i<argc; i++)
     {
       string arg = argv[i];
@@ -365,6 +369,11 @@ bool checkCommandLine(int argc, char* argv[],
 	circuitfn = string(argv[++i]);
       else if (arg == "-p")
 	parametersfn = string(argv[++i]);
+      else if (arg == "-o")
+	{
+	  params_override[string(argv[i+1])] = string(argv[i+2]);
+	  i += 2;
+	}
       else
 	return false;
     }  
@@ -373,15 +382,41 @@ bool checkCommandLine(int argc, char* argv[],
 }
 
 // ----------------------------------------------------------------------
+void overrideParameters(const map<string,string>& params_override,
+			Architecture& arch, Parameters& params)
+{
+  for (auto it = params_override.begin(); it != params_override.end(); ++it)
+    {
+      string param = it->first;
+      string value = it->second;
+
+      if (param == "mesh_x")
+	arch.updateMeshX(stoi(value));
+      else if (param == "mesh_y")
+	arch.updateMeshY(stoi(value));
+      else if (param == "ltm_ports")
+	arch.updateLTMPorts(stoi(value));
+      else if (param == "hop_delay")
+	params.updateHopDelay(stod(value));
+      else
+	cout << "Unrecognized parameter '" << param << "' is ignored!" << endl;
+    }
+}
+
+// ----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   string circuit_fn, architecture_fn, parameters_fn;
-
-  if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn))
+  map<string,string> params_override; // parameter name -> value
+  
+  if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn, params_override))
     {
-      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters>" << endl;
+      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl
+	   << "(supported override parameters -o: mesh_x, mesh_y, ltm_ports, hop_delay)" << endl;
+      
       assert(false);
     }
+
   
   Circuit circuit;
   if (!circuit.readFromFile(circuit_fn))
@@ -396,14 +431,18 @@ int main(int argc, char* argv[])
       cout << "error reading architecture file" << endl;
       assert(false);
     }
-  architecture.display();
-
+  
   Parameters parameters;
   if (!parameters.readFromFile(parameters_fn))
     {
       cout << "error reading parameters file" << endl;
       assert(false);
     }
+
+  overrideParameters(params_override, architecture, parameters);
+
+  circuit.display(false);
+  architecture.display();
   parameters.display();
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
