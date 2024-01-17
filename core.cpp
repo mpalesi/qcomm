@@ -22,6 +22,11 @@ Cores::Cores(const Architecture& architecture, const Mapping& mapping)
     }
 }
 
+void Cores::saveHistory()
+{
+  history.push_back(cores);
+}
+
 void Cores::display()
 {
   cout << endl

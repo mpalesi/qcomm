@@ -278,6 +278,7 @@ Statistics RemoteExecution(const Architecture& architecture,
 	  
 	  updateRemoteExecutionStats(stats, parallel_gates, parallel_communications,
 				     architecture, parameters);
+	  cores.saveHistory();
 	  removeExecutedGates(parallel_gates, gates);
 	} //  while (!gates.empty())
     }
@@ -333,12 +334,10 @@ void updateStatistics(Statistics& global_stats, const Statistics& stats)
 // ----------------------------------------------------------------------
 // Simulate the entire circuit
 Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
-		    const Parameters& parameters, const Mapping& initial_mapping,
-		    const Cores& initial_cores)
+		    const Parameters& parameters,
+		    Mapping& mapping, Cores& cores)
 {
   Statistics global_stats;
-  Mapping mapping = initial_mapping; // mapping will change during circuit execution
-  Cores cores = initial_cores; // cores will change during circuit execution
   
   for (const auto& parallel_gates : circuit.circuit)
     {
@@ -448,13 +447,14 @@ int main(int argc, char* argv[])
   parameters.display();
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
-  //  mapping.display();
+  // mapping.display();
 
   Cores cores(architecture, mapping);
   cores.display();
 
   Statistics stats = Simulate(circuit, architecture, parameters, mapping, cores);
   stats.display();
+  
   
   return 0;
 }
