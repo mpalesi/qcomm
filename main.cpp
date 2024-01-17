@@ -319,19 +319,6 @@ Statistics Simulate(const ParallelGates& pgates, const Architecture& architectur
 }
 
 // ----------------------------------------------------------------------
-void updateStatistics(Statistics& global_stats, const Statistics& stats)
-{
-  global_stats.executed_gates += stats.executed_gates;
-  global_stats.computation_time += stats.computation_time;
-
-  global_stats.communication_time.t_epr += stats.communication_time.t_epr;
-  global_stats.communication_time.t_dist += stats.communication_time.t_dist;
-  global_stats.communication_time.t_pre += stats.communication_time.t_pre;
-  global_stats.communication_time.t_clas += stats.communication_time.t_clas;
-  global_stats.communication_time.t_post += stats.communication_time.t_post;
-}
-
-// ----------------------------------------------------------------------
 // Simulate the entire circuit
 Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
 		    const Parameters& parameters,
@@ -343,7 +330,7 @@ Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
     {
       Statistics stats = Simulate(parallel_gates, architecture, parameters, mapping, cores);
 
-      updateStatistics(global_stats, stats);
+      global_stats.updateStatistics(stats);
     }
 
   return global_stats;
@@ -453,7 +440,7 @@ int main(int argc, char* argv[])
   cores.display();
 
   Statistics stats = Simulate(circuit, architecture, parameters, mapping, cores);
-  stats.display();
+  stats.display(cores, architecture);
   
   
   return 0;
