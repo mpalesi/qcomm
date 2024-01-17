@@ -448,7 +448,7 @@ int main(int argc, char* argv[])
   parameters.display();
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
-  mapping.display();
+  //  mapping.display();
 
   Cores cores(architecture, mapping);
   cores.display();
