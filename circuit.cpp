@@ -3,6 +3,7 @@
 #include <sstream>
 #include <set>
 #include <cassert>
+#include <map>
 #include "circuit.h"
 #include "utils.h"
 
@@ -12,10 +13,20 @@ void Circuit::display(const bool verbose)
 {
   cout << endl
        << "*** Circuit ***" << endl
-       << "number_of_qubits: " << number_of_qubits << endl
-       << "number_of_gates: " << number_of_gates << endl
-       << "number_of_stages: " << number_of_stages << endl;
+       << "Number of qubits: " << number_of_qubits << endl
+       << "Number of gates: " << number_of_gates << endl
+       << "Number of stages: " << number_of_stages << endl;
 
+  // Compute gate distribution
+  map<int,int> inputhist;
+  for (const auto& pg : circuit)
+    for (const auto& g : pg)
+      inputhist[g.size()]++;
+  cout << "Distribution of gates: ";
+  for (const auto& hp : inputhist)
+    cout << hp.first << "-input: " << hp.second*100.0/number_of_gates << "%, ";
+  cout << endl;
+  
   if (verbose)
     for (const auto& parallel_gates : circuit)
       displayGates(parallel_gates, true);

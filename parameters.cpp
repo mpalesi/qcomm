@@ -57,3 +57,8 @@ void Parameters::updateHopDelay(const double nv)
   hop_delay = nv;
 }
 
+void Parameters::updateEPRDelay(const double nv)
+{
+  epr_delay = nv;
+}
+

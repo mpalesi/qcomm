@@ -21,6 +21,7 @@ struct Parameters
   bool readFromFile(const string& file_name);
 
   void updateHopDelay(const double nv);
+  void updateEPRDelay(const double nv);
 };
 
 #endif

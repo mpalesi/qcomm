@@ -19,6 +19,7 @@
 #include "mapping.h"
 #include "statistics.h"
 #include "communication_time.h"
+#include "noc.h"
 #include "parameters.h"
 
 using namespace std;
@@ -131,7 +132,7 @@ void addParallelCommunications(ParallelCommunications& parallel_communications,
       if (src_core != dst_core)
 	{
 	  Communication comm(src_core, dst_core);
-	  parallel_communications.insert(comm);
+	  parallel_communications.push_back(comm); // insert(comm);
 	}
     }
 }
@@ -386,6 +387,8 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateLTMPorts(stoi(value));
       else if (param == "hop_delay")
 	params.updateHopDelay(stod(value));
+      else if (param == "epr_delay")
+	params.updateEPRDelay(stod(value));
       else
 	cout << "Unrecognized parameter '" << param << "' is ignored!" << endl;
     }
@@ -432,9 +435,10 @@ int main(int argc, char* argv[])
   circuit.display(false);
   architecture.display();
   parameters.display();
+
+  NoC noc(architecture.mesh_x, architecture.mesh_y);
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
-  // mapping.display();
 
   Cores cores(architecture, mapping);
   cores.display();

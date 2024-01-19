@@ -1,7 +1,7 @@
 #ifndef __COMMUNICATION_H__
 #define __COMMUNICATION_H__
 
-#include <set>
+#include <list>
 
 using namespace std;
 
@@ -17,7 +17,7 @@ struct Communication
   void display() const;
 };
 
-typedef set<Communication> ParallelCommunications;
+typedef list<Communication> ParallelCommunications;
 
 void displayParallelCommunications(const ParallelCommunications& pc);
 
