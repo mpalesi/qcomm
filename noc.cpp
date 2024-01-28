@@ -1,7 +1,7 @@
 #include <iostream>
 #include "noc.h"
 
-double NoC::getCommunicationTime(const ParallelCommunications& pcomms, double hop_time)
+double NoC::getCommunicationTime(const ParallelCommunications& pcomms, double hop_time) const
 {
   map<pair<int,int>, int> links; // link[(node1,node2)] --> timestep when link is used (busy)
 
@@ -35,7 +35,7 @@ double NoC::getCommunicationTime(const ParallelCommunications& pcomms, double ho
 
 void NoC::updateCommunication(Communication& comm,
 			      map<pair<int,int>, int>& links,
-			      int time_step, bool& drained)
+			      int time_step, bool& drained) const
 {
   if (comm.src_core == comm.dst_core)
     drained = true;
@@ -55,7 +55,7 @@ void NoC::updateCommunication(Communication& comm,
     }
 }
 
-int NoC::routingXY(const int src_core, const int dst_core)
+int NoC::routingXY(const int src_core, const int dst_core) const
 {
   int x, y, xd, yd;
   
@@ -74,13 +74,13 @@ int NoC::routingXY(const int src_core, const int dst_core)
   return getCoreID(x, y);
 }
 
-void NoC::getCoreXY(const int core_id, int& x, int& y)
+void NoC::getCoreXY(const int core_id, int& x, int& y) const
 {
   x = core_id % mesh_x;
   y = core_id / mesh_x;
 }
 
-int NoC::getCoreID(const int x, const int y)
+int NoC::getCoreID(const int x, const int y) const
 {
   return y * mesh_x + x;
 }

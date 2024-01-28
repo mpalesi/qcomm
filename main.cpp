@@ -161,8 +161,8 @@ double getClassicalCommunicationTime(const Communication& comm,
 }
 
 // ----------------------------------------------------------------------
-CommunicationTime getCommunicationTime(const Communication& comm,
-				       const Architecture& arch,
+CommunicationTime getCommunicationTime(const ParallelCommunications& pcomms,
+				       const NoC& noc,
 				       const Parameters& params)
 {
   CommunicationTime ct;
@@ -170,7 +170,7 @@ CommunicationTime getCommunicationTime(const Communication& comm,
   ct.t_epr = params.epr_delay;
   ct.t_dist = params.dist_delay;
   ct.t_pre = params.pre_delay;
-  ct.t_clas = getClassicalCommunicationTime(comm, arch, params);
+  ct.t_clas = noc.getCommunicationTime(pcomms, params.hop_delay);
   ct.t_post = params.post_delay;
   
   return ct;
@@ -191,21 +191,14 @@ void addCommunicationTime(CommunicationTime& total_ct,
 void updateRemoteExecutionStats(Statistics& stats,
 				const ParallelGates& pgates,
 				const ParallelCommunications& pcomms,
-				const Architecture& arch,
+				const NoC& noc,
 				const Parameters& params)
 {
   stats.executed_gates += pgates.size();
 
-  CommunicationTime max_comm_time;
-  
-  for (const auto& comm : pcomms)
-    {
-      CommunicationTime comm_time = getCommunicationTime(comm, arch, params);
-      if (comm_time.getTotalTime() > max_comm_time.getTotalTime())
-	max_comm_time = comm_time;
-    }
-
-  addCommunicationTime(stats.communication_time, max_comm_time);
+  CommunicationTime comm_time = getCommunicationTime(pcomms, noc, params);
+  				       
+  addCommunicationTime(stats.communication_time, comm_time);
   stats.computation_time += params.gate_delay;
 }
 
@@ -220,7 +213,7 @@ void removeExecutedGates(const ParallelGates& scheduled_gates,
 }
 
 // ----------------------------------------------------------------------
-Statistics RemoteExecution(const Architecture& architecture,
+Statistics RemoteExecution(const Architecture& architecture, const NoC& noc,
 			   const Parameters& parameters,
 			   const ParallelGates& rgates,
 			   Mapping& mapping, Cores& cores)
@@ -278,7 +271,7 @@ Statistics RemoteExecution(const Architecture& architecture,
 	    } // for (const auto& gate : gates)
 	  
 	  updateRemoteExecutionStats(stats, parallel_gates, parallel_communications,
-				     architecture, parameters);
+				     noc, parameters);
 	  cores.saveHistory();
 	  removeExecutedGates(parallel_gates, gates);
 	} //  while (!gates.empty())
@@ -305,7 +298,8 @@ Statistics MergeLocalRemoteStatistics(const Statistics& stats_local,
 // ----------------------------------------------------------------------
 // Simulate the execution of parallel gates
 Statistics Simulate(const ParallelGates& pgates, const Architecture& architecture,
-		    const Parameters& parameters, Mapping& mapping, Cores& cores)
+		    const NoC& noc, const Parameters& parameters,
+		    Mapping& mapping, Cores& cores)
 {
   ParallelGates lgates, rgates;
 
@@ -314,7 +308,8 @@ Statistics Simulate(const ParallelGates& pgates, const Architecture& architectur
   assert(!rgates.empty() || !lgates.empty());
 
   Statistics stats_local = LocalExecution(lgates, parameters);
-  Statistics stats_remote = RemoteExecution(architecture, parameters, rgates, mapping, cores);
+  Statistics stats_remote = RemoteExecution(architecture, noc, parameters,
+					    rgates, mapping, cores);
 
   return MergeLocalRemoteStatistics(stats_local, stats_remote);
 }
@@ -322,14 +317,15 @@ Statistics Simulate(const ParallelGates& pgates, const Architecture& architectur
 // ----------------------------------------------------------------------
 // Simulate the entire circuit
 Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
-		    const Parameters& parameters,
+		    const NoC& noc, const Parameters& parameters,
 		    Mapping& mapping, Cores& cores)
 {
   Statistics global_stats;
   
   for (const auto& parallel_gates : circuit.circuit)
     {
-      Statistics stats = Simulate(parallel_gates, architecture, parameters, mapping, cores);
+      Statistics stats = Simulate(parallel_gates, architecture, noc,
+				  parameters, mapping, cores);
 
       global_stats.updateStatistics(stats);
     }
@@ -443,7 +439,7 @@ int main(int argc, char* argv[])
   Cores cores(architecture, mapping);
   cores.display();
 
-  Statistics stats = Simulate(circuit, architecture, parameters, mapping, cores);
+  Statistics stats = Simulate(circuit, architecture, noc, parameters, mapping, cores);
   stats.display(cores, architecture);
   
   

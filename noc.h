@@ -12,12 +12,13 @@ struct NoC
   
   NoC(int _mesh_x, int _mesh_y) : mesh_x(_mesh_x), mesh_y(_mesh_y) {}
 
-  double getCommunicationTime(const ParallelCommunications& pc, double hop_time);
+  double getCommunicationTime(const ParallelCommunications& pc, double hop_time) const;
+  
   void updateCommunication(Communication& comm, map<pair<int,int>, int>& links,
-			   int time_step, bool& drained);
-  int routingXY(const int src_core, const int dst_core);
-  void getCoreXY(const int core_id, int& x, int& y);
-  int getCoreID(const int x, const int y);
+			   int time_step, bool& drained) const;
+  int routingXY(const int src_core, const int dst_core) const;
+  void getCoreXY(const int core_id, int& x, int& y) const;
+    int getCoreID(const int x, const int y) const;
 };
 
 #endif
