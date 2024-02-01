@@ -170,7 +170,7 @@ CommunicationTime getCommunicationTime(const ParallelCommunications& pcomms,
   ct.t_epr = params.epr_delay;
   ct.t_dist = params.dist_delay;
   ct.t_pre = params.pre_delay;
-  ct.t_clas = noc.getCommunicationTime(pcomms, params.hop_delay);
+  ct.t_clas = noc.getCommunicationTime(pcomms);
   ct.t_post = params.post_delay;
   
   return ct;
@@ -196,6 +196,8 @@ void updateRemoteExecutionStats(Statistics& stats,
 {
   stats.executed_gates += pgates.size();
 
+  stats.intercore_comms += pcomms.size();
+    
   CommunicationTime comm_time = getCommunicationTime(pcomms, noc, params);
   				       
   addCommunicationTime(stats.communication_time, comm_time);
@@ -288,6 +290,8 @@ Statistics MergeLocalRemoteStatistics(const Statistics& stats_local,
 
   // TODO: check this function!!!
   stats.executed_gates = stats_local.executed_gates + stats_remote.executed_gates;
+  stats.intercore_comms = stats_remote.intercore_comms;
+  
   stats.communication_time = stats_remote.communication_time;
   stats.computation_time = (stats_local.computation_time > stats_remote.computation_time) ?
     stats_local.computation_time : stats_remote.computation_time;
@@ -327,7 +331,10 @@ Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
       Statistics stats = Simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
 
-      global_stats.updateStatistics(stats);
+      double th = noc.getThroughput(stats.intercore_comms,
+				    stats.computation_time + stats.communication_time.getTotalTime());
+
+      global_stats.updateStatistics(stats, th);
     }
 
   return global_stats;
@@ -377,6 +384,8 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateMeshX(stoi(value));
       else if (param == "mesh_y")	
 	arch.updateMeshY(stoi(value));
+      else if (param == "link_width")	
+	arch.updateLinkWidth(stoi(value));
       else if (param == "qubits_per_core")
 	arch.updateQubitsPerCore(stoi(value));
       else if (param == "ltm_ports")
@@ -386,7 +395,7 @@ void overrideParameters(const map<string,string>& params_override,
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
       else
-	cout << "Unrecognized parameter '" << param << "' is ignored!" << endl;
+	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }
 }
 
@@ -432,7 +441,8 @@ int main(int argc, char* argv[])
   architecture.display();
   parameters.display();
 
-  NoC noc(architecture.mesh_x, architecture.mesh_y);
+  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.hop_delay);
+  noc.display();
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
 

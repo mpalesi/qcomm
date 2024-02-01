@@ -33,6 +33,8 @@ bool Architecture::readFromFile(const string& file_name)
 	iss >> mesh_x;
       else if (attribute == string("mesh_y"))
 	iss >> mesh_y;
+      else if (attribute == string("link_width"))
+	iss >> link_width;
       else if (attribute == string("qubits_per_core"))
 	iss >> qubits_per_core;
       else if (attribute == string("ltm_ports"))
@@ -46,8 +48,8 @@ bool Architecture::readFromFile(const string& file_name)
 
   input_file.close();
 
-  number_of_cores = mesh_x * mesh_y;
-
+  updateDerivedVariables();
+  
   configured = true;
 
   return true;
@@ -56,13 +58,18 @@ bool Architecture::readFromFile(const string& file_name)
 void Architecture::updateMeshX(const int nv)
 {
   mesh_x = nv;
-  number_of_cores = mesh_x * mesh_y;
+  updateDerivedVariables();
 }
 
 void Architecture::updateMeshY(const int nv)
 {
   mesh_y = nv;
-  number_of_cores = mesh_x * mesh_y;
+  updateDerivedVariables();
+}
+
+void Architecture::updateLinkWidth(const int nv)
+{
+  link_width = nv;
 }
 
 void Architecture::updateQubitsPerCore(const int nv)
@@ -73,4 +80,9 @@ void Architecture::updateQubitsPerCore(const int nv)
 void Architecture::updateLTMPorts(const int nv)
 {
   ltm_ports = nv;
+}
+
+void Architecture::updateDerivedVariables()
+{
+  number_of_cores = mesh_x * mesh_y;
 }

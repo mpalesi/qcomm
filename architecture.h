@@ -8,9 +8,10 @@ using namespace std;
 struct Architecture
 {
   int  mesh_x, mesh_y;
+  int  link_width;
   int  qubits_per_core;
   int  ltm_ports;
-  int  number_of_cores;
+  int  number_of_cores; // derived value
   bool configured;
   
   Architecture() : configured(false) {}
@@ -21,9 +22,11 @@ struct Architecture
 
   void updateMeshX(const int nv);
   void updateMeshY(const int nv);
+  void updateLinkWidth(const int nv);
   void updateQubitsPerCore(const int nv);
   void updateLTMPorts(const int nv);
-  
+
+  void updateDerivedVariables();
 };
 
 #endif

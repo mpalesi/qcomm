@@ -8,12 +8,17 @@
 struct Statistics
 {
   int executed_gates;
+  int intercore_comms;
   CommunicationTime communication_time;
   double computation_time;
+  double avg_throughput, max_throughput;
+  int    samples;
   
-  Statistics() : executed_gates(0), computation_time(0.0) {}
+  //  Statistics() : executed_gates(0), intercore_comms(0), computation_time(0.0), samples(0) {}
 
-  void updateStatistics(const Statistics& stats);
+  Statistics();
+  
+  void updateStatistics(const Statistics& stats, const double th);
   
   void display(const Cores& cores, const Architecture& arch);
 
