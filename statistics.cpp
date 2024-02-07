@@ -20,8 +20,8 @@ void Statistics::display(const Cores& cores, const Architecture& arch)
        << "*** Statistics ***" << endl
        << "Executed gates: " << executed_gates << endl
        << "Intercore communications: " << intercore_comms << endl
-       << "Throughput (Mbps): " << max_throughput/1.0e6 << " peak, "
-       << avg_throughput/1.0e6 << " avg" << endl;
+       << "Throughput (Mbps): " << avg_throughput/1.0e6 << " avg, " << max_throughput/1.0e6 << " peak"
+       << endl;
 
   
   double avg, min, max;
@@ -48,14 +48,16 @@ void Statistics::updateStatistics(const Statistics& stats, const double th)
   communication_time.t_post += stats.communication_time.t_post;
 
   // update throughput stats
-  if (th > max_throughput)
-    max_throughput = th;
+  if (th > 0.0)
+    {      
+      if (th > max_throughput)
+	max_throughput = th;
 
-  avg_throughput = (samples * avg_throughput) / (1+samples) +
-    th / (samples + 1);
+      avg_throughput = (samples * avg_throughput) / (1 + samples) +
+	th / (samples + 1);
 
-  samples++;
-
+      samples++;
+  }
 }
 
 

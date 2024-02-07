@@ -331,8 +331,13 @@ Statistics Simulate(const Circuit& circuit, const Architecture& architecture,
       Statistics stats = Simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
 
+      /*	
       double th = noc.getThroughput(stats.intercore_comms,
 				    stats.computation_time + stats.communication_time.getTotalTime());
+      */
+      
+      double th = noc.getThroughput(stats.intercore_comms,
+				    stats.communication_time.getTotalTime());
 
       global_stats.updateStatistics(stats, th);
     }
