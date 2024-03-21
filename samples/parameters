@@ -4,3 +4,5 @@ epr_delay 1e-6
 dist_delay 0.01e-9
 pre_delay 390e-9
 post_delay 30e-9
+wbit_rate 12e9
+token_pass_time 1e-9

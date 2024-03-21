@@ -7,12 +7,14 @@ void Parameters::display() const
 {
   cout << endl
        << "*** Parameters ***" << endl
-       << "gate_delay: " << gate_delay << endl
-       << "hop_delay: " << hop_delay << endl
-       << "epr_delay: " << epr_delay << endl
-       << "dist_delay: " << dist_delay << endl
-       << "pre_delay: " << pre_delay << endl
-       << "post_delay: " << post_delay << endl;
+       << "gate delay (s): " << gate_delay << endl
+       << "hop delay (s): " << hop_delay << endl
+       << "epr delay (s): " << epr_delay << endl
+       << "dist delay (s): " << dist_delay << endl
+       << "pre delay (s): " << pre_delay << endl
+       << "post delay (s): " << post_delay << endl
+       << "wbit rate (bps): " << wbit_rate << endl
+       << "token pass time (s): " << token_pass_time << endl;
 }
 
 bool Parameters::readFromFile(const string& file_name)
@@ -40,6 +42,10 @@ bool Parameters::readFromFile(const string& file_name)
 	iss >> pre_delay;
       else if (param == string("post_delay"))
 	iss >> post_delay;
+      else if (param == string("wbit_rate"))
+	iss >> wbit_rate;
+      else if (param == string("token_pass_time"))
+	iss >> token_pass_time;
       else {
 	cout << "Invalid patameter reading " << file_name
 	     << ": '" << param << "'" << endl;
@@ -62,3 +68,12 @@ void Parameters::updateEPRDelay(const double nv)
   epr_delay = nv;
 }
 
+void Parameters::updateWBitRate(const double nv)
+{
+  wbit_rate = nv;
+}
+
+void Parameters::updateTokenPassTime(const double nv)
+{
+  token_pass_time = nv;
+}

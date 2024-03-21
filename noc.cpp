@@ -4,6 +4,8 @@
 
 NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time)
 {
+  winoc = false;
+  
   mesh_x = _mesh_x;
   mesh_y = _mesh_y;
   link_width = _link_width;
@@ -17,20 +19,38 @@ NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time)
   cycles_per_packet = ceil((double)packet_size / link_width);
 }
 
+void NoC::enableWiNoC(const double _bit_rate, const int _radio_channels, double _token_pass_time)
+{
+  winoc = true;
+
+  wbit_rate = _bit_rate;
+  radio_channels = _radio_channels;
+  token_pass_time = _token_pass_time;
+  wpacket_time = packet_size / wbit_rate;
+}
 
 void NoC::display()
 {
-  cout << endl
-       << "*** NoC ***" << endl
-       << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
-       << "link width (bits): " << link_width << endl
-       << "packet_size (bits): " << packet_size << endl
-       << "cycles per packets: " << cycles_per_packet
-       << endl;
+  if (!winoc)
+    {
+      cout << endl
+	   << "*** NoC ***" << endl
+	   << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
+	   << "link width (bits): " << link_width << endl
+	   << "packet_size (bits): " << packet_size << endl
+	   << "cycles per packets: " << cycles_per_packet << endl;
+    }
+  else
+    {
+      cout << "*** WiNoC ***" << endl
+	   << "bit rate (bps): " << wbit_rate << endl
+	   << "radio channels: " << radio_channels << endl
+	   << "token pass time (s): " << token_pass_time << endl
+	   << "packet time (s): " << wpacket_time << endl;
+    }
 }
 
-
-double NoC::getCommunicationTime(const ParallelCommunications& pcomms) const
+double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) const
 {
   map<pair<int,int>, int> links; // link[(node1,node2)] --> timestep when link is used (busy)
 
@@ -60,6 +80,20 @@ double NoC::getCommunicationTime(const ParallelCommunications& pcomms) const
        max = link.second;
         
    return (max+1) * hop_time * cycles_per_packet;
+}
+
+double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
+{
+  int nodes = mesh_x * mesh_y;
+  return (pcomms.size() * wpacket_time + nodes * token_pass_time)/radio_channels;
+}
+
+double NoC::getCommunicationTime(const ParallelCommunications& pcomms) const
+{
+  if (!winoc)
+    return getCommunicationTimeWired(pcomms);
+  else
+    return getCommunicationTimeWireless(pcomms);  
 }
 
 void NoC::updateCommunication(Communication& comm,

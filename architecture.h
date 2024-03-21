@@ -7,12 +7,14 @@ using namespace std;
 
 struct Architecture
 {
-  int  mesh_x, mesh_y;
-  int  link_width;
-  int  qubits_per_core;
-  int  ltm_ports;
-  int  number_of_cores; // derived value
-  bool configured;
+  int    mesh_x, mesh_y;
+  int    link_width;
+  int    qubits_per_core;
+  int    ltm_ports;
+  int    radio_channels;
+  int    number_of_cores; // derived value
+  bool   wireless_enabled;
+  bool   configured;
   
   Architecture() : configured(false) {}
 
@@ -25,6 +27,8 @@ struct Architecture
   void updateLinkWidth(const int nv);
   void updateQubitsPerCore(const int nv);
   void updateLTMPorts(const int nv);
+  void updateRadioChannels(const int nv);
+  void updateWirelessEnabled(const int nv);
 
   void updateDerivedVariables();
 };

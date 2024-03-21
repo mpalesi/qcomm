@@ -3,3 +3,5 @@ mesh_y 2
 link_width 8
 qubits_per_core 10
 ltm_ports 2
+radio_channels 1
+wireless_enabled 0

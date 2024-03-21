@@ -9,10 +9,13 @@ void Architecture::display() const
   cout << endl
        << "*** Architecture ***" << endl
        << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
-       << "qubits_per_core: " << qubits_per_core
+       << "qubits per core: " << qubits_per_core
        << " (total physical qubits: " << mesh_x * mesh_y * qubits_per_core << ")" << endl
-       << "ltm_ports = " << ltm_ports
-       << endl;
+       << "ltm ports = " << ltm_ports << endl;
+
+  if (wireless_enabled)
+    cout << "wireless enabled" << endl
+	 << "radio_channels: " << radio_channels << endl;
 }
 
 bool Architecture::readFromFile(const string& file_name)
@@ -39,6 +42,10 @@ bool Architecture::readFromFile(const string& file_name)
 	iss >> qubits_per_core;
       else if (attribute == string("ltm_ports"))
 	iss >> ltm_ports;
+      else if (attribute == string("radio_channels"))
+	iss >> radio_channels;
+      else if (attribute == string("wireless_enabled"))
+	iss >> wireless_enabled;
       else {
 	cout << "Invalid attribute reading " << file_name
 	     << ": '" << attribute << "'" << endl;
@@ -82,7 +89,18 @@ void Architecture::updateLTMPorts(const int nv)
   ltm_ports = nv;
 }
 
+void Architecture::updateRadioChannels(const int nv)
+{
+  radio_channels = nv;
+}
+
+void Architecture::updateWirelessEnabled(const int nv)
+{
+  wireless_enabled = nv;
+}
+
 void Architecture::updateDerivedVariables()
 {
   number_of_cores = mesh_x * mesh_y;
 }
+

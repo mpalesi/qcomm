@@ -395,10 +395,18 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateQubitsPerCore(stoi(value));
       else if (param == "ltm_ports")
 	arch.updateLTMPorts(stoi(value));
+      else if (param == "radio_channels")
+	arch.updateRadioChannels(stoi(value));
+      else if (param == "wireless_enabled")
+	arch.updateWirelessEnabled(stoi(value));
       else if (param == "hop_delay")
 	params.updateHopDelay(stod(value));
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
+      else if (param == "wbit_rate")
+	params.updateWBitRate(stod(value));
+      else if (param == "token_pass_time")
+	params.updateTokenPassTime(stod(value));
       else
 	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }
@@ -447,6 +455,9 @@ int main(int argc, char* argv[])
   parameters.display();
 
   NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.hop_delay);
+  if (architecture.wireless_enabled)
+    noc.enableWiNoC(parameters.wbit_rate, architecture.radio_channels, parameters.token_pass_time);
+      
   noc.display();
   
   Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
