@@ -68,6 +68,16 @@ void Parameters::updateEPRDelay(const double nv)
   epr_delay = nv;
 }
 
+void Parameters::updatePreDelay(const double nv)
+{
+  pre_delay = nv;
+}
+
+void Parameters::updatePostDelay(const double nv)
+{
+  post_delay = nv;
+}
+
 void Parameters::updateWBitRate(const double nv)
 {
   wbit_rate = nv;

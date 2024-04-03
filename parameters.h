@@ -24,6 +24,8 @@ struct Parameters
 
   void updateHopDelay(const double nv);
   void updateEPRDelay(const double nv);
+  void updatePreDelay(const double nv);
+  void updatePostDelay(const double nv);
   void updateWBitRate(const double nv);
   void updateTokenPassTime(const double nv);
 };

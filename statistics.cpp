@@ -29,9 +29,10 @@ void Statistics::display(const Cores& cores, const Architecture& arch)
   cout << "Core utilization: " << avg << " avg, " << min << " min, " << max << " max" << endl;
     
   communication_time.display();
+  double execution_time = computation_time + communication_time.getTotalTime();
   cout << "Computation time (s): " << computation_time << endl
-       << "Execution time (s): " << computation_time + communication_time.getTotalTime()
-       << endl;
+       << "Execution time (s): " << execution_time << endl
+       << "Coherence (%): " << 100.0*exp(-execution_time / 268e-6) << endl;
   
 }
 

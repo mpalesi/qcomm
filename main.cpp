@@ -403,6 +403,10 @@ void overrideParameters(const map<string,string>& params_override,
 	params.updateHopDelay(stod(value));
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
+      else if (param == "pre_delay")
+	params.updatePreDelay(stod(value));
+      else if (param == "post_delay")
+	params.updatePostDelay(stod(value));
       else if (param == "wbit_rate")
 	params.updateWBitRate(stod(value));
       else if (param == "token_pass_time")
