@@ -458,7 +458,7 @@ int main(int argc, char* argv[])
   architecture.display();
   parameters.display();
 
-  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.hop_delay);
+  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.hop_delay, architecture.qubits_per_core);
   if (architecture.wireless_enabled)
     noc.enableWiNoC(parameters.wbit_rate, architecture.radio_channels, parameters.token_pass_time);
       

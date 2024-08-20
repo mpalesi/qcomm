@@ -20,7 +20,7 @@ struct NoC
   
   bool   winoc;
   
-  NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time);
+  NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time, int _qubits_per_core);
 
   void enableWiNoC(const double _bit_rate, const int _radio_channels, double _token_pass_time);
   

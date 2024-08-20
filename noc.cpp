@@ -2,7 +2,7 @@
 #include <cmath>
 #include "noc.h"
 
-NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time)
+NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time, int _qubits_per_core)
 {
   winoc = false;
   
@@ -11,7 +11,7 @@ NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time)
   link_width = _link_width;
   hop_time = _hop_time;
 
-  int address_size = ceil(log2(mesh_x * mesh_y));
+  int address_size = ceil(log2(mesh_x * mesh_y * _qubits_per_core));
  
   packet_size = 2 + 2*address_size; // 2 bits per teleportation
 				    // protocol, 2*address_size bit
