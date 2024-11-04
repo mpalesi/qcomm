@@ -65,6 +65,7 @@ Statistics LocalExecution(const ParallelGates& lgates,
   if (!lgates.empty())
     {
       stats.computation_time = params.gate_delay;
+      // TODO: add swap contribution like in the remote execution
       stats.executed_gates = lgates.size();
     }
   
@@ -201,6 +202,10 @@ void updateRemoteExecutionStats(Statistics& stats,
   CommunicationTime comm_time = getCommunicationTime(pcomms, noc, params);
   				       
   addCommunicationTime(stats.communication_time, comm_time);
+
+  // We assume that all the gates in the slice are executed
+  // concurrently, each contributing with a gate delay, assuming that
+  // the gate delay is constant regardless of the gate type.
   stats.computation_time += params.gate_delay;
 }
 
@@ -424,8 +429,7 @@ int main(int argc, char* argv[])
   
   if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn, params_override))
     {
-      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl
-	   << "(supported override parameters -o: mesh_x, mesh_y, qubits_per_core, ltm_ports, hop_delay)" << endl;
+      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl;
       
       assert(false);
     }
