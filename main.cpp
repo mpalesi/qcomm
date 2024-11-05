@@ -474,7 +474,7 @@ int main(int argc, char* argv[])
   cores.display();
 
   Statistics stats = Simulate(circuit, architecture, noc, parameters, mapping, cores);
-  stats.display(cores, architecture);
+  stats.display(circuit, cores, architecture);
   
   
   return 0;

@@ -2,6 +2,7 @@
 #define __STATISTICS_H__
 
 #include "core.h"
+#include "circuit.h"
 #include "architecture.h"
 #include "communication_time.h"
 
@@ -20,7 +21,7 @@ struct Statistics
   
   void updateStatistics(const Statistics& stats, const double th);
   
-  void display(const Cores& cores, const Architecture& arch);
+  void display(const Circuit& circuit, const Cores& cores, const Architecture& arch);
 
   void getCoresStats(const vector<Core>& cores, const Architecture& arch,
 		     double& avg_u, double& min_u, double& max_u);
@@ -31,6 +32,8 @@ struct Statistics
   int countCommunications(const Cores& cores, const int src, const int dst);
   vector<vector<int> > getIntercoreCommunications(const Cores& cores);
 
+  void displayOperationsPerQubit(const Circuit& circuit);
+  vector<int> getOperationsPerQubit(const Circuit& circuit);
 };
 
 #endif

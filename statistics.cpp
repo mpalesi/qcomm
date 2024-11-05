@@ -15,6 +15,7 @@ Statistics::Statistics()
   samples = 0;
 }
 
+
 int Statistics::countCommunications(const Cores& cores, const int src, const int dst)
 {
   int n = 0;
@@ -66,7 +67,28 @@ void Statistics::displayIntercoreCommunications(const Cores& cores)
     }
 }
 
-void Statistics::display(const Cores& cores, const Architecture& arch)
+vector<int> Statistics::getOperationsPerQubit(const Circuit& circuit)
+{
+  vector<int> opsqb(circuit.number_of_qubits, 0);
+
+  for (ParallelGates pg : circuit.circuit)
+    for (Gate g : pg)
+      for (int qb : g)
+	opsqb[qb]++;
+
+  return opsqb;
+}
+
+void Statistics::displayOperationsPerQubit(const Circuit& circuit)
+{
+  vector<int> opsqb = getOperationsPerQubit(circuit);
+
+  for (int ops : opsqb)
+    cout << ops << ", ";
+  cout << endl;
+}
+
+void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch)
 {
   cout << endl
        << "*** Statistics ***" << endl
@@ -82,6 +104,9 @@ void Statistics::display(const Cores& cores, const Architecture& arch)
 
   cout << "Intercore communications (row is source, col is target):" << endl;
   displayIntercoreCommunications(cores);
+
+  cout << "Operations per qubit: ";
+  displayOperationsPerQubit(circuit);
   
   communication_time.display();
   double execution_time = computation_time + communication_time.getTotalTime();
