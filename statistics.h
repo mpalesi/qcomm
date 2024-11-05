@@ -27,6 +27,10 @@ struct Statistics
   void getCoresStats(const list<vector<Core> >& history, const Architecture& arch,
 		     double& avg_u, double& min_u, double& max_u);
 
+  void displayIntercoreCommunications(const Cores& cores);
+  int countCommunications(const Cores& cores, const int src, const int dst);
+  vector<vector<int> > getIntercoreCommunications(const Cores& cores);
+
 };
 
 #endif
