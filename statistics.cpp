@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <algorithm>
+#include <cassert>
 #include "statistics.h"
 
 using namespace std;
@@ -20,7 +21,8 @@ int Statistics::countCommunications(const Cores& cores, const int src, const int
 {
   int n = 0;
   
-  for (list<vector<Core> >::const_iterator it_curr = cores.history.begin(); it_curr != cores.history.end(); ++it_curr)
+  for (list<vector<Core> >::const_iterator it_curr = cores.history.begin();
+       it_curr != cores.history.end(); ++it_curr)
     {
       list<vector<Core> >::const_iterator it_next = next(it_curr);
       if (it_next != cores.history.end())
@@ -88,6 +90,60 @@ void Statistics::displayOperationsPerQubit(const Circuit& circuit)
   cout << endl;
 }
 
+// return core idx where qb is located. -1 if not found
+int Statistics::qbitToCore(const int qb, const vector<Core> cores)
+{
+  int n = cores.size();
+
+  for (int i=0; i<n; i++)
+    if (cores[i].find(qb) != cores[i].end())
+      return i;
+
+  return -1;
+}
+
+int Statistics::getTeleportationsPerQubit(const int qb, const Cores& cores)
+{
+  int tps = 0;
+
+  for (list<vector<Core> >::const_iterator it_curr = cores.history.begin();
+       it_curr != cores.history.end(); ++it_curr)
+    {
+      list<vector<Core> >::const_iterator it_next = next(it_curr);
+      if (it_next != cores.history.end())
+	{
+	  int core_s = qbitToCore(qb, *it_curr);
+	  int core_d = qbitToCore(qb, *it_next);
+	  assert(core_s != -1 && core_d != -1);
+
+	  if (core_s != core_d)
+	    tps++;
+	}
+    }
+  
+  return tps;
+}
+
+vector<int> Statistics::getTeleportationsPerQubit(const Circuit& circuit, const Cores& cores)
+{
+  vector<int> tpsqb(circuit.number_of_qubits);
+
+  for (int qb = 0; qb < circuit.number_of_qubits; qb++)
+    tpsqb[qb] = getTeleportationsPerQubit(qb, cores);
+  
+  return tpsqb;
+}
+
+void Statistics::displayTeleportationsPerQubit(const Circuit& circuit, const Cores& cores)
+{
+  vector<int> tpsqb = getTeleportationsPerQubit(circuit, cores);
+
+  for (int tps : tpsqb)
+    cout << tps << ", ";
+  cout << endl;
+  
+}
+
 void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch)
 {
   cout << endl
@@ -107,6 +163,9 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   cout << "Operations per qubit: ";
   displayOperationsPerQubit(circuit);
+
+  cout << "Teleportations per qubit: ";
+  displayTeleportationsPerQubit(circuit, cores);
   
   communication_time.display();
   double execution_time = computation_time + communication_time.getTotalTime();

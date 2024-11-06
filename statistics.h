@@ -34,6 +34,13 @@ struct Statistics
 
   void displayOperationsPerQubit(const Circuit& circuit);
   vector<int> getOperationsPerQubit(const Circuit& circuit);
+
+  void displayTeleportationsPerQubit(const Circuit& circuit, const Cores& cores);
+  vector<int> getTeleportationsPerQubit(const Circuit& circuit, const Cores& cores);
+  int getTeleportationsPerQubit(const int qb, const Cores& cores);
+  int qbitToCore(const int qb, const vector<Core> cores);
+
+
 };
 
 #endif

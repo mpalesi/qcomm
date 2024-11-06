@@ -18,7 +18,7 @@ struct Cores
 
   void saveHistory();
   
-  void display();
+  void display();  
 };
 
 #endif
