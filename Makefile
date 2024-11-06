@@ -6,7 +6,7 @@ RCG_TARGET := rcg
 
 OBJDIR := obj
 
-MODULES := main architecture noc circuit communication communication_time core gate mapping parameters statistics utils
+MODULES := main architecture noc circuit communication communication_time core gate mapping parameters statistics utils simulation command_line
 OBJS := $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
 
 RCG_MODULES := rcg circuit gate utils
