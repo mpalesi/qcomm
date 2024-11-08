@@ -13,10 +13,14 @@ struct Parameters
   double dist_delay;
   double pre_delay;
   double post_delay;
+  double noc_clock_time;
   double wbit_rate;
   double token_pass_time;
+  double memory_bandwidth; // bits/sec
+  int    bits_instruction; // number of bits used for encoding an instruction
+  double decode_time_per_instruction;
   
-  Parameters() : gate_delay(0.0), hop_delay(0.0), epr_delay(0.0), dist_delay(0.0), pre_delay(0.0), post_delay(0.0), wbit_rate(0.0), token_pass_time(0.0) {}
+  Parameters() : gate_delay(0.0), hop_delay(0.0), epr_delay(0.0), dist_delay(0.0), pre_delay(0.0), post_delay(0.0), noc_clock_time(0.0), wbit_rate(0.0), token_pass_time(0.0), memory_bandwidth(0.0), bits_instruction(0), decode_time_per_instruction(0.0) {}
 
   void display() const;
 

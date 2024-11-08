@@ -13,8 +13,12 @@ void Parameters::display() const
        << "dist delay (s): " << dist_delay << endl
        << "pre delay (s): " << pre_delay << endl
        << "post delay (s): " << post_delay << endl
+       << "nocl clock time (s): " << noc_clock_time << endl
        << "wbit rate (bps): " << wbit_rate << endl
-       << "token pass time (s): " << token_pass_time << endl;
+       << "token pass time (s): " << token_pass_time << endl
+       << "memory mandwidth (bps): " << memory_bandwidth << endl
+       << "bits instruction (bits): " << bits_instruction << endl
+       << "decode time per instruction (s): " << decode_time_per_instruction << endl;
 }
 
 bool Parameters::readFromFile(const string& file_name)
@@ -42,10 +46,18 @@ bool Parameters::readFromFile(const string& file_name)
 	iss >> pre_delay;
       else if (param == string("post_delay"))
 	iss >> post_delay;
+      else if (param == string("noc_clock_time"))
+	iss >> noc_clock_time;
       else if (param == string("wbit_rate"))
 	iss >> wbit_rate;
       else if (param == string("token_pass_time"))
 	iss >> token_pass_time;
+      else if (param == string("memory_bandwidth"))
+	iss >> memory_bandwidth;
+      else if (param == string("bits_instruction"))
+	iss >> bits_instruction;
+      else if (param == string("decode_time_per_instruction"))
+	iss >> decode_time_per_instruction;
       else {
 	cout << "Invalid patameter reading " << file_name
 	     << ": '" << param << "'" << endl;

@@ -10,13 +10,15 @@ struct NoC
 {
   int    mesh_x, mesh_y;
   int    link_width;
-  double hop_time;
-  int    packet_size;
-  int    cycles_per_packet;
+  double clock_time;
+  int    qubit_addr_bits;
+  //  double hop_time;
+  //  int    packet_size;
+  //  int    cycles_per_packet;
   double wbit_rate;
   int    radio_channels;
   double token_pass_time;
-  double wpacket_time;
+  //  double wpacket_time;
   
   bool   winoc;
   
@@ -38,6 +40,10 @@ struct NoC
   void getCoreXY(const int core_id, int& x, int& y) const;
   int getCoreID(const int x, const int y) const;
 
+  int getLinkMinTime(const map<pair<int,int>, int>& links) const;
+  int getLinkMaxTime(const map<pair<int,int>, int>& links) const;
+  int linkTraversalCycles(int volume) const;
+  double getTransferTime(int volume) const;
 };
 
 #endif

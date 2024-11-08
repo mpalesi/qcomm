@@ -9,8 +9,9 @@ struct Communication
 {
   int src_core;
   int dst_core;
-
-  Communication(int src, int dst) : src_core(src), dst_core(dst) {}
+  int volume;
+  
+  Communication(int src, int dst, int vol) : src_core(src), dst_core(dst), volume(vol) {}
 
   bool operator<(const Communication& other) const;
   
@@ -20,6 +21,7 @@ struct Communication
 typedef list<Communication> ParallelCommunications;
 
 void displayParallelCommunications(const ParallelCommunications& pc);
+int getTotalCommunicationVolume(const ParallelCommunications& pc);
 
 #endif
 

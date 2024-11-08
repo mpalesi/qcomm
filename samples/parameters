@@ -6,3 +6,7 @@ pre_delay 390e-9
 post_delay 30e-9
 wbit_rate 12e9
 token_pass_time 1e-9
+memory_bandwidth 128e9
+bits_instruction 4
+decode_time_per_instruction 10e-9
+noc_clock_time 10e-9

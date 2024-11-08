@@ -58,7 +58,8 @@ int main(int argc, char* argv[])
   architecture.display();
   parameters.display();
 
-  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.hop_delay, architecture.qubits_per_core);
+  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.noc_clock_time,
+	  ceil(log2(architecture.qubits_per_core * architecture.number_of_cores)));
   if (architecture.wireless_enabled)
     noc.enableWiNoC(parameters.wbit_rate, architecture.radio_channels, parameters.token_pass_time);
       
@@ -69,11 +70,20 @@ int main(int argc, char* argv[])
   Cores cores(architecture, mapping);
   cores.display();
 
+  // -----
+  ParallelCommunications pcomms;
+  pcomms.push_back(Communication(0, 3, 8));
+  pcomms.push_back(Communication(1, 3, 8));
+  displayParallelCommunications(pcomms);
+  
+  cout << "comm time: " << noc.getCommunicationTimeWired(pcomms) << endl;
+  // -----
+  /*
   Simulation simulation;
   Statistics stats = simulation.simulate(circuit, architecture, noc, parameters, mapping, cores);
-    
-  stats.display(circuit, cores, architecture);
   
+  stats.display(circuit, cores, architecture);
+  */  
   
   return 0;
 }

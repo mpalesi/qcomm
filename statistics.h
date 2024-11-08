@@ -10,13 +10,16 @@ struct Statistics
 {
   int executed_gates;
   int intercore_comms;
+  int intercore_volume;
   CommunicationTime communication_time;
   double computation_time;
   double avg_throughput, max_throughput;
   int    samples;
+  double fetch_time;
+  double decode_time;
+  double dispatch_time;
   
-  //  Statistics() : executed_gates(0), intercore_comms(0), computation_time(0.0), samples(0) {}
-
+  
   Statistics();
   
   void updateStatistics(const Statistics& stats, const double th);

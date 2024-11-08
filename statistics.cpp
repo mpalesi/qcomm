@@ -10,10 +10,14 @@ Statistics::Statistics()
 {
   executed_gates = 0;
   intercore_comms = 0;
+  intercore_volume = 0;
   computation_time = 0.0;
   avg_throughput = 0.0;
   max_throughput = 0.0;
   samples = 0;
+  fetch_time = 0.0;
+  decode_time = 0.0;
+  dispatch_time = 0.0;
 }
 
 
@@ -150,6 +154,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
        << "*** Statistics ***" << endl
        << "Executed gates: " << executed_gates << endl
        << "Intercore communications: " << intercore_comms << endl
+       << "Intercore traffic volume (bits): " << intercore_volume << endl
        << "Throughput (Mbps): " << avg_throughput/1.0e6 << " avg, " << max_throughput/1.0e6 << " peak"
        << endl;
 
@@ -168,8 +173,10 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
   displayTeleportationsPerQubit(circuit, cores);
   
   communication_time.display();
-  double execution_time = computation_time + communication_time.getTotalTime();
+  double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time;
   cout << "Computation time (s): " << computation_time << endl
+       << "Fetch time (s): " << fetch_time << endl
+       << "Decode time (s): " << decode_time << endl
        << "Execution time (s): " << execution_time << endl
        << "Coherence (%): " << 100.0*exp(-execution_time / 268e-6) << endl;
   
@@ -179,6 +186,7 @@ void Statistics::updateStatistics(const Statistics& stats, const double th)
 {
   executed_gates += stats.executed_gates;
   intercore_comms += stats.intercore_comms;
+  intercore_volume += stats.intercore_volume;
   computation_time += stats.computation_time;
   
   communication_time.t_epr += stats.communication_time.t_epr;
@@ -187,6 +195,10 @@ void Statistics::updateStatistics(const Statistics& stats, const double th)
   communication_time.t_clas += stats.communication_time.t_clas;
   communication_time.t_post += stats.communication_time.t_post;
 
+  fetch_time += stats.fetch_time;
+  decode_time += stats.decode_time;
+  dispatch_time += stats.dispatch_time;
+  
   // update throughput stats
   if (th > 0.0)
     {      
