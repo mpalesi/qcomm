@@ -2,6 +2,8 @@
 #define __NOC_H__
 
 #include <map>
+#include <queue>
+
 #include "communication.h"
 
 using namespace std;
@@ -34,16 +36,20 @@ struct NoC
   double getCommunicationTimeWired(const ParallelCommunications& pc) const;
   double getCommunicationTimeWireless(const ParallelCommunications& pc) const;
   
-  void updateCommunication(Communication& comm, map<pair<int,int>, int>& links,
-			   int time_step, bool& drained) const;
   int routingXY(const int src_core, const int dst_core) const;
   void getCoreXY(const int core_id, int& x, int& y) const;
   int getCoreID(const int x, const int y) const;
 
-  int getLinkMinTime(const map<pair<int,int>, int>& links) const;
-  int getLinkMaxTime(const map<pair<int,int>, int>& links) const;
   int linkTraversalCycles(int volume) const;
   double getTransferTime(int volume) const;
+  map<int,Communication> assignCommunicationIds(const ParallelCommunications& pcomms) const;
+  bool commIsInQueue(const int id, const queue<pair<int,int> >& qc) const;
+  int computeStartTime(const queue<pair<int,int> >& qc) const;
+  bool updateLinksOccupation(map<pair<int,int>, queue<pair<int,int> > >& links_occupation,
+			     const int cid, Communication& comm,
+			     const int clock_cycle) const;
+  int nextClockCycle(const map<pair<int,int>, queue<pair<int,int> > >& links_occupation) const;
+
 };
 
 #endif

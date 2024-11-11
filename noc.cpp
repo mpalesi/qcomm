@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <cassert>
 #include "noc.h"
 
 NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _clock_time, int _qubit_addr_bits)
@@ -49,96 +50,172 @@ void NoC::display()
 	   << "token pass time (s): " << token_pass_time << endl;
     }
 }
-/*
+
+
+map<int,Communication>  NoC::assignCommunicationIds(const ParallelCommunications& pcomms) const
+{
+  map<int,Communication> pcomms_id;
+  int id = 0;
+
+  for (Communication comm : pcomms)
+    pcomms_id.insert({id++, comm});
+  
+  return pcomms_id;
+}
+
+bool NoC::commIsInQueue(const int id, const queue<pair<int,int> >& qc) const
+{
+  queue<pair<int,int> > temp = qc;
+
+  while (!temp.empty())
+    {
+      if (temp.front().first == id)
+	return true;
+
+      temp.pop();
+    }
+  
+  return false;
+}
+
+int NoC::computeStartTime(const queue<pair<int,int> >& qc) const
+{
+  int st = 0;
+  queue<pair<int,int> > temp = qc;
+
+  while (!temp.empty())
+    {
+      st += temp.front().second; 
+      temp.pop();
+    }
+
+  return st;
+}
+
+int NoC::nextClockCycle(const map<pair<int,int>, queue<pair<int,int> > >& links_occupation) const
+{
+  // the next clock cycle corresponds to the minimum waiting time in the links_occupation structure
+
+  int min_cc = std::numeric_limits<int>::max();
+  for (const auto& l : links_occupation)
+    {
+      queue<pair<int,int> > q = l.second;
+      while (!q.empty())
+	{
+	  int cc = q.front().second;
+	  q.pop();
+	  
+	  if (cc < min_cc)
+	    min_cc = cc;
+	}
+    }
+
+  return min_cc;
+}
+
+bool NoC::updateLinksOccupation(map<pair<int,int>, queue<pair<int,int> > >& links_occupation,
+				const int cid, Communication& comm,
+				const int clock_cycle) const
+{
+  bool drained = false;
+  
+  int next_core = routingXY(comm.src_core, comm.dst_core);
+
+  pair<int,int> link(comm.src_core, next_core);
+
+  auto it_links_occupation = links_occupation.find(link);
+
+  if (it_links_occupation == links_occupation.end())
+    {
+      // comm_id is the first one traversing the link
+      queue<pair<int,int> > q;
+      q.push(pair<int,int>(cid, clock_cycle + linkTraversalCycles(comm.volume)));
+      links_occupation[link] = q;
+    }
+  else
+    {
+      // link is already used
+      if (!commIsInQueue(cid, it_links_occupation->second))
+	{
+	  // if the link exists then the queue must contains communications otherwise
+	  // the link is removed from the links_occupation structure
+	  assert(!it_links_occupation->second.empty());
+
+	  // if comm is not yet in queue for the link, add it in queue. It will start when all the
+	  // previous communications left the link
+	  it_links_occupation->second.push(pair<int,int>(cid,
+							 computeStartTime(it_links_occupation->second) +
+							 linkTraversalCycles(comm.volume)));	  
+	}
+      else
+	{
+	  // communication is in queue. If it is in the front and its
+	  // release time passed than it can advance and removed from
+	  // the queue
+	  if (it_links_occupation->second.front().first == cid &&
+	      clock_cycle >= it_links_occupation->second.front().second)
+	    {
+	      comm.src_core = next_core;
+
+	      // check if drained
+	      if (comm.src_core == comm.dst_core)
+		drained = true;
+
+	      // remove the communication from the queue of the current link
+	      it_links_occupation->second.pop();
+
+	      // check if the queue is empty and in this case remove the link from links_occupation
+	      if (it_links_occupation->second.empty())
+		links_occupation.erase(it_links_occupation);
+	    }
+	}
+    }
+
+  return drained;
+}
+
 double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) const
 {
-  map<pair<int,int>, int> links; // link[(node1,node2)] --> timestep when link is used (busy)
-
-  int time_step = 0; 
-  bool traffic_drained;
-  ParallelCommunications lpcomms = pcomms;
+  map<pair<int,int>, queue<pair<int,int> > > links_occupation; // links_occupation[(node1,node2)] --> (queue of pairs (comm_id, when the link is released)
+  map<int,Communication> pcomms_id = assignCommunicationIds(pcomms);
+  int clock_cycle = 0;
   
-  do {
-    traffic_drained = true;
-    ParallelCommunications new_pcomms;
-    for (auto comm : lpcomms)
-      {
-	bool drained;
-	updateCommunication(comm, links, time_step, drained);
-	new_pcomms.push_back(comm);
-	if (!drained)
-	  traffic_drained = false;
-      }
-    time_step++;
-    lpcomms = new_pcomms;
-  } while (!traffic_drained);
+  while (!pcomms_id.empty())
+    {
+      // DEBUG      cout << endl << endl << "cc: " << clock_cycle << endl;
+      
+      for (map<int,Communication>::iterator it = pcomms_id.begin(); it != pcomms_id.end(); )
+	{
+	  bool drained = updateLinksOccupation(links_occupation, it->first, it->second, clock_cycle);
+	  /* DEBUG
+	  cout << "\tcomm id " << it->first << ": " << it->second.src_core << "-->" << it->second.dst_core << " (" << it->second.volume << ")" << endl;
+	  cout << "\tlinks occupation:" << endl;
+	  
+	  for (const auto& lo : links_occupation)
+	    {
+	      cout << "\t" << lo.first.first << "-->" << lo.first.second << ": ";
+	      queue<pair<int,int> > q = lo.second;
+	      while (!q.empty())
+		{
+		  cout << "(" << q.front().first << "," << q.front().second << "), ";
+		  q.pop();
+		}
+	      cout << endl;
+	    }
+	  */
+	  
+	  if (drained)
+	    it = pcomms_id.erase(it);
+	  else
+	    ++it;
+	}
 
-  // search for the maximum time_step in the links
-   int max= std::numeric_limits<int>::min();
-   for (const auto& link : links)
-     if (link.second > max)
-       max = link.second;
-        
-   return (max+1) * hop_time * cycles_per_packet;
+      if (!links_occupation.empty())
+	clock_cycle = nextClockCycle(links_occupation);
+    }
+
+  return clock_cycle * clock_time;
 }
-*/
-
-double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) const
-{
-  map<pair<int,int>, int> links; // link[(node1,node2)] --> until which timestep the link is busy
-    
-  int time_step = 0; 
-  bool traffic_drained;
-  ParallelCommunications lpcomms = pcomms;
-  
-  do {
-    traffic_drained = true;
-    ParallelCommunications new_pcomms;
-    for (auto comm : lpcomms)
-      {
-	bool drained;
-	updateCommunication(comm, links, time_step, drained);
-	new_pcomms.push_back(comm);
-	if (!drained)
-	  traffic_drained = false;
-      }
-    time_step = getLinkMinTime(links) + 1;
-    lpcomms = new_pcomms;
-  } while (!traffic_drained);
-
-  /*
-  // search for the maximum time_step in the links
-   int max= std::numeric_limits<int>::min();
-   for (const auto& link : links)
-     if (link.second > max)
-       max = link.second;
-  */
-
-  return getLinkMaxTime(links) * clock_time;
-}
-
-int NoC::getLinkMaxTime(const map<pair<int,int>, int>& links) const
-{
-  // search for the maximum time_step in the links
-  int max = std::numeric_limits<int>::min();
-  for (const auto& link : links)
-    if (link.second > max)
-      max = link.second;
-  
-  return max;
-}
-
-int NoC::getLinkMinTime(const map<pair<int,int>, int>& links) const
-{
-  // search for the minimum time_step in the links
-  int min = std::numeric_limits<int>::max();
-  for (const auto& link : links)
-    if (link.second < min)
-      min = link.second;
-  
-  return min;
-}
-
 
 double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
 {
@@ -169,52 +246,6 @@ double NoC::getTransferTime(int volume) const
 	return avg_token_waiting_time + (volume / wbit_rate);
     }
 
-}
-
-/*
-void NoC::updateCommunication(Communication& comm,
-			      map<pair<int,int>, int>& links,
-			      int time_step, bool& drained) const
-{
-  if (comm.src_core == comm.dst_core)
-    drained = true;
-  else
-    {
-      drained = false;
-      
-      int next_core = routingXY(comm.src_core, comm.dst_core);
-      
-      pair<int,int> link(comm.src_core, next_core);
-      auto it = links.find(link);
-      if (it == links.end() || it->second != time_step)
-	{
-	  links[link] = time_step;
-	  comm.src_core = next_core;
-	}
-    }
-}
-*/
-
-void NoC::updateCommunication(Communication& comm,
-			      map<pair<int,int>, int>& links,
-			      int time_step, bool& drained) const
-{
-  if (comm.src_core == comm.dst_core)
-    drained = true;
-  else
-    {
-      drained = false;
-      
-      int next_core = routingXY(comm.src_core, comm.dst_core);
-      
-      pair<int,int> link(comm.src_core, next_core);
-      auto it = links.find(link);
-      if (it == links.end() || it->second <= time_step)
-	{
-	  links[link] = time_step + linkTraversalCycles(comm.volume);
-	  comm.src_core = next_core;
-	}
-    }
 }
 
 int NoC::linkTraversalCycles(int volume) const

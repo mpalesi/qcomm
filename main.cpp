@@ -70,20 +70,23 @@ int main(int argc, char* argv[])
   Cores cores(architecture, mapping);
   cores.display();
 
-  // -----
+  /*
   ParallelCommunications pcomms;
-  pcomms.push_back(Communication(0, 3, 8));
-  pcomms.push_back(Communication(1, 3, 8));
+  pcomms.push_back(Communication(0, 3, 32));
+  pcomms.push_back(Communication(1, 3, 16));
+  pcomms.push_back(Communication(2, 0, 32));
+  
   displayParallelCommunications(pcomms);
   
   cout << "comm time: " << noc.getCommunicationTimeWired(pcomms) << endl;
-  // -----
-  /*
+  */
+
+  
   Simulation simulation;
   Statistics stats = simulation.simulate(circuit, architecture, noc, parameters, mapping, cores);
   
   stats.display(circuit, cores, architecture);
-  */  
+  
   
   return 0;
 }
