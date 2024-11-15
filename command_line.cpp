@@ -56,18 +56,28 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateRadioChannels(stoi(value));
       else if (param == "wireless_enabled")
 	arch.updateWirelessEnabled(stoi(value));
-      else if (param == "hop_delay")
-	params.updateHopDelay(stod(value));
+      else if (param == "gate_delay")
+	params.updateGateDelay(stod(value));
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
+      else if (param == "dist_delay")
+	params.updateDistDelay(stod(value));
       else if (param == "pre_delay")
 	params.updatePreDelay(stod(value));
       else if (param == "post_delay")
 	params.updatePostDelay(stod(value));
+      else if (param == "noc_clock_time")
+	params.updateNoCClockTime(stod(value));
       else if (param == "wbit_rate")
 	params.updateWBitRate(stod(value));
       else if (param == "token_pass_time")
 	params.updateTokenPassTime(stod(value));
+      else if (param == "memory_bandwidth")
+	params.updateMemoryBandwidth(stod(value));
+      else if (param == "bits_instruction")
+	params.updateBitsInstruction(stoi(value));
+      else if (param == "decode_time_per_instruction")
+	params.updateDecodeTime(stod(value));
       else
 	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }

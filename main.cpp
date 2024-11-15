@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
   
   if (!checkCommandLine(argc, argv, circuit_fn, architecture_fn, parameters_fn, params_override))
     {
-      cout << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl;
+      cerr << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl;
       
       assert(false);
     }
