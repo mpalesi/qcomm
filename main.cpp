@@ -27,29 +27,29 @@ int main(int argc, char* argv[])
     {
       cerr << "Usage " << argv[0] << " -c <circuit> -a <architecture> -p <parameters> [-o <param> <value>]" << endl;
       
-      assert(false);
+      return -1;
     }
 
   
   Circuit circuit;
   if (!circuit.readFromFile(circuit_fn))
     {
-      cout << "error reading circuit file" << endl;
-      assert(false);
+      cerr << "error reading circuit file" << endl;
+      return -2;
     }
   
   Architecture architecture;
   if (!architecture.readFromFile(architecture_fn))
     {
-      cout << "error reading architecture file" << endl;
-      assert(false);
+      cerr << "error reading architecture file" << endl;
+      return -3;
     }
   
   Parameters parameters;
   if (!parameters.readFromFile(parameters_fn))
     {
-      cout << "error reading parameters file" << endl;
-      assert(false);
+      cerr << "error reading parameters file" << endl;
+      return -4;
     }
 
   overrideParameters(params_override, architecture, parameters);
