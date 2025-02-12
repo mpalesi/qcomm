@@ -11,7 +11,15 @@ void Architecture::display() const
        << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
        << "qubits per core: " << qubits_per_core
        << " (total physical qubits: " << mesh_x * mesh_y * qubits_per_core << ")" << endl
-       << "ltm ports = " << ltm_ports << endl;
+       << "ltm ports: " << ltm_ports << endl;
+
+  cout << "teleportation type: ";
+  if (teleportation_type == TP_TYPE_A2A)
+    cout << "all to all" << endl;
+  else if (teleportation_type == TP_TYPE_MESH)
+    cout << "mesh" << endl;
+  else 
+    cout << "???" << endl;
 
   if (wireless_enabled)
     cout << "wireless enabled" << endl
@@ -46,6 +54,8 @@ bool Architecture::readFromFile(const string& file_name)
 	iss >> radio_channels;
       else if (attribute == string("wireless_enabled"))
 	iss >> wireless_enabled;
+      else if (attribute == string("teleportation_type"))
+	iss >> teleportation_type;
       else {
 	cout << "Invalid attribute reading " << file_name
 	     << ": '" << attribute << "'" << endl;
@@ -97,6 +107,11 @@ void Architecture::updateRadioChannels(const int nv)
 void Architecture::updateWirelessEnabled(const int nv)
 {
   wireless_enabled = nv;
+}
+
+void Architecture::updateTeleportationType(const int nv)
+{
+  teleportation_type = nv;
 }
 
 void Architecture::updateDerivedVariables()

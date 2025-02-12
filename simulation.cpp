@@ -370,21 +370,42 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 {
   Statistics global_stats;
   
-  for (const auto& parallel_gates : circuit.circuit)
+  // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation
+  list<ParallelGates> lcircuit = circuit.circuit;
+  
+  if (architecture.teleportation_type != TP_TYPE_A2A)
     {
+      cerr << "only all-to-all teleportion currently supported!" << endl;
+      assert(false);
+    }
+
+  for (auto& parallel_gates : lcircuit)
+    {
+      //      FixParallelGatesAndUpdateCircuit(architecture, parallel_gates, mapping, cores, lcircuit);
+      
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
-
-      /*	
-      double th = noc.getThroughput(stats.intercore_comms,
-				    stats.computation_time + stats.communication_time.getTotalTime());
-      */
       
       double th = noc.getThroughput(stats.intercore_volume,
 				    stats.communication_time.getTotalTime());
-
+      
       global_stats.updateStatistics(stats, th);
     }
 
   return global_stats;
 }
+
+// ----------------------------------------------------------------------
+// This method applies only when teleportation connectivity is not
+// all-to-all. In this case the execution of a remote gate is splitted
+// in the execution of different teleportation aimed at moving one of
+// the involved qubits from source to destination. The circuit is
+// updated accordingly to accommodate the additional introduced slices
+/*
+void FixParallelGatesAndUpdateCircuit(const Architecture& architecture,
+				      const ParallelGates& pgates,
+				      Mapping& mapping, Cores& cores,
+				      list<ParallelGates>& circuit
+{
+}
+*/

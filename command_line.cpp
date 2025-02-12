@@ -56,6 +56,8 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateRadioChannels(stoi(value));
       else if (param == "wireless_enabled")
 	arch.updateWirelessEnabled(stoi(value));
+      else if (param == "teleportation_type")
+	arch.updateTeleportationType(stod(value));
       else if (param == "gate_delay")
 	params.updateGateDelay(stod(value));
       else if (param == "epr_delay")
