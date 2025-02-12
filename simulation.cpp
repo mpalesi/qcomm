@@ -379,9 +379,9 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
       assert(false);
     }
 
-  for (auto& parallel_gates : lcircuit)
+  for (list<ParallelGates>::iterator it_pgates = lcircuit.begin(); it_pgates != lcircuit.end(); it_pgates++)
     {
-      //      FixParallelGatesAndUpdateCircuit(architecture, parallel_gates, mapping, cores, lcircuit);
+      ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, architecture, mapping, cores);
       
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
@@ -401,11 +401,17 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 // in the execution of different teleportation aimed at moving one of
 // the involved qubits from source to destination. The circuit is
 // updated accordingly to accommodate the additional introduced slices
-/*
-void FixParallelGatesAndUpdateCircuit(const Architecture& architecture,
-				      const ParallelGates& pgates,
-				      Mapping& mapping, Cores& cores,
-				      list<ParallelGates>& circuit
+ParallelGates FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_pgates,
+					       const Architecture& architecture,
+					       Mapping& mapping, Cores& cores)
 {
+  ParallelGates pgates = *it_pgates;
+
+  if (architecture.teleportation_type == TP_TYPE_A2A)
+    return pgates; 
+
+  ParallelGates lgates, rgates;
+  splitLocalRemoteGates(pgates, mapping, lgates, rgates);
+
+  
 }
-*/
