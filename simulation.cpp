@@ -373,15 +373,15 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
   // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation
   list<ParallelGates> lcircuit = circuit.circuit;
   
-  if (architecture.teleportation_type != TP_TYPE_A2A)
-    {
-      cerr << "only all-to-all teleportion currently supported!" << endl;
-      assert(false);
-    }
-
   for (list<ParallelGates>::iterator it_pgates = lcircuit.begin(); it_pgates != lcircuit.end(); it_pgates++)
     {
+
+      cout << "Current slice: ";
+      displayGates(*it_pgates, true);
+      
       ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit, architecture, mapping, cores);
+      cout << "After FixParallelGatesAndUpdateCircuit: ";
+      displayGates(parallel_gates, true);
       
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
@@ -553,9 +553,9 @@ list<ParallelGates> Simulation::sequenceParallelGates(const ParallelGates& lgate
 	}
     }
 
-  if (!slices.empty())
-    slices.front().splice(slices.front().begin(), lgates.begin(), lgates.end());
-  
+
+  slices.front().insert(slices.front().end(), lgates.begin(), lgates.end());
+      
   return slices;
 }
 
@@ -567,7 +567,7 @@ ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::itera
 						      const list<ParallelGates>& pgates_list_seq)
 {
   it_pgates = circuit.erase(it_pgates);
-  circuit.insert(it_pgates, pgates_list_sec.begin(), pgates_list_sec.end());
+  circuit.insert(it_pgates, pgates_list_seq.begin(), pgates_list_seq.end());
 
   return *it_pgates;
 }
@@ -591,7 +591,12 @@ ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::
   ParallelGates lgates, rgates;
   splitLocalRemoteGates(pgates, mapping, lgates, rgates);
 
+  cout << "after splitLocalRemoteGates: ";
+  cout << "local: "; displayGates(lgates, false);
+  cout << "remote: "; displayGates(rgates, true);
+  
   list<ParallelGates> pgates_list_par = splitRemoteGates(rgates, architecture, mapping, cores);
+  
   list<ParallelGates> pgates_list_seq = sequenceParallelGates(lgates, pgates_list_par);
   ParallelGates pg = insertSequenceParallelGates(it_pgates, circuit, pgates_list_seq);
 
