@@ -69,6 +69,30 @@ struct Simulation
 		      const NoC& noc, const Parameters& parameters,
 		      Mapping& mapping, Cores& cores);
 
+  vector<int> computeTPPathMesh(const int qubit_src, const int qubit_dst,
+				const Architecture& architecture,
+				const Mapping& mapping);
+  vector<int> computeTPPath(const int qubit_src, const int qubit_dst,
+			    const Architecture& architecture,
+			    const Mapping& mapping);
+  int allocateAncilla(const int core_id,
+		      const Architecture& architecture,
+		      Mapping& mapping, Cores& cores);
+  ParallelGates splitRemoteGate(const Gate& gate,
+				const Architecture& architecture,
+				Mapping& mapping, Cores& cores);
+  list<ParallelGates> splitRemoteGates(const ParallelGates& rgates,
+				       const Architecture& architecture,
+				       Mapping& mapping, Cores& cores);
+  list<ParallelGates> sequenceParallelGates(const ParallelGates& lgates,
+					    const list<ParallelGates>& pgates_list_par);
+  ParallelGates insertSequenceParallelGates(list<ParallelGates>::iterator it_pgates,
+					    list<ParallelGates>& circuit,
+					    const list<ParallelGates>& pgates_list_seq);
+  ParallelGates FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_pgates,
+						 list<ParallelGates>& circuit,
+						 const Architecture& architecture,
+						 Mapping& mapping, Cores& cores);
 };
 
 #endif

@@ -13,10 +13,10 @@ bool Simulation::isLocalGate(const Gate& gate, const Mapping& mapping)
 {
   assert(!gate.empty());
   
-  int core_id = mapping.qubit2core[gate.front()]; // core where the first qubit of the gate is mapped to
+  int core_id = mapping.qubit2CoreSafe(gate.front()); // core where the first qubit of the gate is mapped to
 
   for (const auto& qb : gate)
-    if (mapping.qubit2core[qb] != core_id)
+    if (mapping.qubit2CoreSafe(qb) != core_id)
       return false;
 
   return true;
@@ -63,7 +63,7 @@ int Simulation::selectDestinationCore(const Gate& gate, const Mapping& mapping, 
   int selected_core = -1;
   for (const auto& qb : gate)
     {
-      int core_id = mapping.qubit2core[qb];
+      int core_id = mapping.qubit2CoreSafe(qb);
 
       if ((int)cores.cores[core_id].size() < min_qb)
 	{
@@ -112,7 +112,7 @@ void Simulation::addParallelCommunications(ParallelCommunications& parallel_comm
 {
   for (const auto& qb : gate)
     {
-      int src_core = mapping.qubit2core[qb];
+      int src_core = mapping.qubit2CoreSafe(qb);
       if (src_core != dst_core)
 	{
 	  Communication comm(src_core, dst_core, volume);
@@ -311,7 +311,7 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
       // first one.
       int qb = g.front();
       assert(qb >= 0 && qb < (int)mapping.qubit2core.size());
-      int dst_core = mapping.qubit2core[qb];
+      int dst_core = mapping.qubit2CoreSafe(qb);
       Communication comm(0, dst_core, volume);
     }
 
@@ -381,7 +381,7 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 
   for (list<ParallelGates>::iterator it_pgates = lcircuit.begin(); it_pgates != lcircuit.end(); it_pgates++)
     {
-      ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, architecture, mapping, cores);
+      ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit, architecture, mapping, cores);
       
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
@@ -396,14 +396,192 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 }
 
 // ----------------------------------------------------------------------
+vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_dst,
+					  const Architecture& architecture,
+					  const Mapping& mapping)
+{
+  vector<int> path;
+  
+  int src_core = mapping.qubit2CoreSafe(qubit_src);
+  int dst_core = mapping.qubit2CoreSafe(qubit_dst);
+
+  // XY routing
+  int xs = src_core % architecture.mesh_x;
+  int ys = src_core / architecture.mesh_x;
+  int xd = dst_core % architecture.mesh_x;
+  int yd = dst_core / architecture.mesh_x;
+
+  path.push_back(src_core);
+  int x = xs;
+  int y = ys;
+  while (x != xd && y != yd)
+    {
+      if (x < xd)
+	x++;
+      else if (x > xd)
+	x--;
+      else if (y < yd)
+	y++;
+      else if (y > yd)
+	y--;
+
+      int curr_core = y * architecture.mesh_x + x;
+      path.push_back(curr_core);
+    }
+
+  return path;
+}
+
+// ----------------------------------------------------------------------
+// Computhe the path from source qubit to destination qubit based on
+// the current teleportation type
+vector<int> Simulation::computeTPPath(const int qubit_src, const int qubit_dst,
+				      const Architecture& architecture,
+				      const Mapping& mapping)
+{
+  if (architecture.teleportation_type == TP_TYPE_MESH)
+    return computeTPPathMesh(qubit_src, qubit_dst, architecture, mapping);
+  else
+    assert(false);
+}
+
+// ----------------------------------------------------------------------
+int Simulation::allocateAncilla(const int core_id,
+				const Architecture& architecture,
+				Mapping& mapping, Cores& cores)
+{
+  int ancilla;
+  
+  if (!cores.allocateAncilla(core_id, architecture, mapping, ancilla))
+    {
+      cerr << "Cannot allocate ancilla on core " << core_id << endl;
+      assert(false);
+    }
+
+  return ancilla;
+}
+
+// ----------------------------------------------------------------------
+// This method splits a remote gate into a sequence of remote gates
+// involving qubits located in directly connected cores. As new qubits
+// (ancilla qubits) are allocated, the mapping and core structures are
+// updated accordingly.
+ParallelGates Simulation::splitRemoteGate(const Gate& gate,
+					  const Architecture& architecture,
+					  Mapping& mapping, Cores& cores)
+{
+  assert(gate.size() == 2); // currently supported only two-input remote gates
+
+  ParallelGates pg;
+  
+  // We assume that we want to teleport the qubit in input[0] of the
+  // gate to the core where the qubit in input[1] of the gate is
+  // located.
+  auto it = gate.begin();
+  int qubit_src = *it;
+  ++it;
+  int qubit_dst = *it;
+  vector<int> path = computeTPPath(qubit_src, qubit_dst, architecture, mapping);
+
+
+  int curr_qubit = qubit_src;
+  int next_qubit;
+  for (size_t i=1; i<path.size(); i++)
+    {
+      int next_core = path[i];
+
+      if (i == path.size()-1) // next_core is the last core in the path
+	next_qubit = qubit_dst;
+      else
+	next_qubit = allocateAncilla(next_core, architecture, mapping, cores);
+
+      pg.push_back(Gate(curr_qubit, next_qubit));
+      
+      curr_qubit = next_qubit;
+    }
+
+  return pg;
+}
+
+// ----------------------------------------------------------------------
+// This method splits each remote gate into a list of remote gates
+// whose input qubits are located in two directly connected cores. As
+// new qubits (ancilla qubits) are allocated, the cores and mapping
+// are updated accordingly. It returns a list of ParallelGates, where
+// each element in the list represents a set of gates resulting from
+// the expansion of a remote gate into a sequence of remote gates
+// involving qubits belonging to connected cores
+list<ParallelGates> Simulation::splitRemoteGates(const ParallelGates& rgates,
+						 const Architecture& architecture,
+						 Mapping& mapping, Cores& cores)
+{
+  list<ParallelGates> pgates_list;
+  
+  for (const auto& gate : rgates)
+    {      
+      pgates_list.push_back(splitRemoteGate(gate, architecture, mapping, cores));
+    }
+
+  return pgates_list;
+}
+
+// ----------------------------------------------------------------------
+
+list<ParallelGates> Simulation::sequenceParallelGates(const ParallelGates& lgates,
+						      const list<ParallelGates>& pgates_list_par)
+{
+  if (pgates_list_par.empty())
+    return {lgates};
+
+  size_t max_cols = 0;
+  for (const auto& row : pgates_list_par)
+    max_cols = max(max_cols, row.size());
+
+  list<ParallelGates> slices(max_cols);
+
+  auto it_out = slices.begin();
+  for (size_t col = 0; col < max_cols; ++col, ++it_out)
+    {
+      for (const auto& row : pgates_list_par)
+	{
+	  auto it_row = row.begin();
+	  if (col < row.size())
+	    {
+	      advance(it_row, col);
+	      it_out->push_back(*it_row);
+	    }
+	}
+    }
+
+  if (!slices.empty())
+    slices.front().splice(slices.front().begin(), lgates.begin(), lgates.end());
+  
+  return slices;
+}
+
+// ----------------------------------------------------------------------
+// replace the ParallelGates in the circuit pointed by it_pgates with
+// the pgates_list_seq and return the first ParallelGate in the list
+ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::iterator it_pgates,
+						      list<ParallelGates>& circuit,
+						      const list<ParallelGates>& pgates_list_seq)
+{
+  it_pgates = circuit.erase(it_pgates);
+  circuit.insert(it_pgates, pgates_list_sec.begin(), pgates_list_sec.end());
+
+  return *it_pgates;
+}
+
+// ----------------------------------------------------------------------
 // This method applies only when teleportation connectivity is not
 // all-to-all. In this case the execution of a remote gate is splitted
 // in the execution of different teleportation aimed at moving one of
 // the involved qubits from source to destination. The circuit is
 // updated accordingly to accommodate the additional introduced slices
-ParallelGates FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_pgates,
-					       const Architecture& architecture,
-					       Mapping& mapping, Cores& cores)
+ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_pgates,
+							   list<ParallelGates>& circuit,
+							   const Architecture& architecture,
+							   Mapping& mapping, Cores& cores)
 {
   ParallelGates pgates = *it_pgates;
 
@@ -413,5 +591,9 @@ ParallelGates FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_
   ParallelGates lgates, rgates;
   splitLocalRemoteGates(pgates, mapping, lgates, rgates);
 
-  
+  list<ParallelGates> pgates_list_par = splitRemoteGates(rgates, architecture, mapping, cores);
+  list<ParallelGates> pgates_list_seq = sequenceParallelGates(lgates, pgates_list_par);
+  ParallelGates pg = insertSequenceParallelGates(it_pgates, circuit, pgates_list_seq);
+
+  return pg;
 }
