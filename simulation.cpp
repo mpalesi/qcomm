@@ -56,23 +56,39 @@ Statistics Simulation::localExecution(const ParallelGates& lgates,
 
 // ----------------------------------------------------------------------
 // Choose the target core based on the number of allocated
-// qubits. Select the core with the fewest allocated qubits.
-int Simulation::selectDestinationCore(const Gate& gate, const Mapping& mapping, const Cores& cores)
+// qubits. Select the core with the fewest allocated qubits.  This is
+// valid only for telepot_type all-to-all and if option TODO is set
+// otherwise it is assumed that the first qubit is the source and the
+// second is the destination.
+int Simulation::selectDestinationCore(const Architecture& architecture,
+				      const Gate& gate, const Mapping& mapping, const Cores& cores)
 {
-  int min_qb = numeric_limits<int>::max();
-  int selected_core = -1;
-  for (const auto& qb : gate)
+  int selected_core;
+  
+  if (architecture.teleportation_type == TP_TYPE_MESH)
     {
-      int core_id = mapping.qubit2CoreSafe(qb);
-
-      if ((int)cores.cores[core_id].size() < min_qb)
-	{
-	  min_qb = cores.cores[core_id].size();
-	  selected_core = core_id;
-	}
+      assert(gate.size() == 2);
+      auto it = gate.begin(); 
+      advance(it, 1);    
+      selected_core = mapping.qubit2CoreSafe(*it);
     }
-
-  assert(selected_core != -1);
+  else
+    {
+      int min_qb = numeric_limits<int>::max();
+      selected_core = -1;
+      for (const auto& qb : gate)
+	{
+	  int core_id = mapping.qubit2CoreSafe(qb);
+	  
+	  if ((int)cores.cores[core_id].size() < min_qb)
+	    {
+	      min_qb = cores.cores[core_id].size();
+	      selected_core = core_id;
+	    }
+	}
+      
+      assert(selected_core != -1);
+    }
   
   return selected_core;
 }
@@ -203,7 +219,7 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 	  for (const auto& gate : gates)
 	    {
 	      bool skip_this_gate = false;
-	      int dst_core = selectDestinationCore(gate, mapping, cores);
+	      int dst_core = selectDestinationCore(architecture, gate, mapping, cores);
 	      vector<int> tmp_available_ltm_ports = available_ltm_ports;
 	      for (const auto& qb : gate)
 		{		  
@@ -307,10 +323,14 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
     {
       int volume = parameters.bits_instruction + g.size() * bits_qubit_laddr;
       // all the qubits of gate in lgates are in the same core. Thus,
-      // to determine the target core we use one of them e.g. the
-      // first one.
-      int qb = g.front();
-      assert(qb >= 0 && qb < (int)mapping.qubit2core.size());
+      // to determine the target core. The target core cannot be
+      // inferred from the gate in general. For the case of
+      // teleportation_type == MESH the target core is that hosting
+      // the qubit in the secon input of the gate.
+      assert(g.size() >= 2);
+      auto it = g.begin(); 
+      advance(it, 1);    
+      int qb = *it;      
       int dst_core = mapping.qubit2CoreSafe(qb);
       Communication comm(0, dst_core, volume);
     }
@@ -363,6 +383,62 @@ Statistics Simulation::simulate(const ParallelGates& pgates, const Architecture&
 }
 
 // ----------------------------------------------------------------------
+void Simulation::freeAncillas(const set<int>& ancilla, Mapping& mapping, Cores& cores)
+{
+  for (int qba : ancilla)
+    {
+      int core_id = mapping.qubit2CoreSafe(qba);
+
+      cores.cores[core_id].erase(qba);
+      mapping.qubit2core.erase(qba);
+    }
+}
+
+// ----------------------------------------------------------------------
+void Simulation::removeUsedAncillas(set<int>& ancillas, const ParallelGates& pg)
+{
+  for (const auto& gate : pg) {
+    for (int qb : gate) {
+      ancillas.erase(qb);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+set<int> Simulation::getAncillas(const ParallelGates& pg)
+{
+  set<int> ancillas;
+
+  for (const auto& gate : pg)
+    for (int qb : gate)
+      if (qb < 0)
+	ancillas.insert(qb);
+  
+  return ancillas;
+}
+
+// ----------------------------------------------------------------------
+// Remove the ancillas used in the current slice if they are not
+// referred in subsequent slices
+void Simulation::freeUnusedAncillas(list<ParallelGates>::iterator it_pgates,
+				    const list<ParallelGates>& circuit,
+				    Mapping& mapping, Cores& cores)
+{
+    
+  set<int> ancillas = getAncillas(*it_pgates);
+  
+  it_pgates++;
+  while (it_pgates != circuit.end() && !ancillas.empty())
+    {
+      removeUsedAncillas(ancillas, *it_pgates);
+      it_pgates++;
+    }
+  
+  // The qubits into ancillas are not used thus they can be released
+  freeAncillas(ancillas, mapping, cores);
+}
+
+// ----------------------------------------------------------------------
 // Simulate the entire circuit
 Statistics Simulation::simulate(const Circuit& circuit, const Architecture& architecture,
 				const NoC& noc, const Parameters& parameters,
@@ -373,23 +449,25 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
   // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation
   list<ParallelGates> lcircuit = circuit.circuit;
   
-  for (list<ParallelGates>::iterator it_pgates = lcircuit.begin(); it_pgates != lcircuit.end(); it_pgates++)
-    {
-
-      cout << "Current slice: ";
-      displayGates(*it_pgates, true);
-      
-      ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit, architecture, mapping, cores);
-      cout << "After FixParallelGatesAndUpdateCircuit: ";
-      displayGates(parallel_gates, true);
+  for (list<ParallelGates>::iterator it_pgates = lcircuit.begin();
+       it_pgates != lcircuit.end(); it_pgates++)
+    {      
+      ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit,
+								      architecture, mapping, cores);
       
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
+      
+      
+      freeUnusedAncillas(it_pgates, lcircuit, mapping, cores);
+      
       
       double th = noc.getThroughput(stats.intercore_volume,
 				    stats.communication_time.getTotalTime());
       
       global_stats.updateStatistics(stats, th);
+      
+      
     }
 
   return global_stats;
@@ -404,7 +482,7 @@ vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_d
   
   int src_core = mapping.qubit2CoreSafe(qubit_src);
   int dst_core = mapping.qubit2CoreSafe(qubit_dst);
-
+  
   // XY routing
   int xs = src_core % architecture.mesh_x;
   int ys = src_core / architecture.mesh_x;
@@ -414,7 +492,7 @@ vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_d
   path.push_back(src_core);
   int x = xs;
   int y = ys;
-  while (x != xd && y != yd)
+  while (x != xd || y != yd)
     {
       if (x < xd)
 	x++;
@@ -481,10 +559,9 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
   int qubit_src = *it;
   ++it;
   int qubit_dst = *it;
+  
   vector<int> path = computeTPPath(qubit_src, qubit_dst, architecture, mapping);
 
-
-  int curr_qubit = qubit_src;
   int next_qubit;
   for (size_t i=1; i<path.size(); i++)
     {
@@ -495,9 +572,7 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
       else
 	next_qubit = allocateAncilla(next_core, architecture, mapping, cores);
 
-      pg.push_back(Gate(curr_qubit, next_qubit));
-      
-      curr_qubit = next_qubit;
+      pg.push_back({qubit_src, next_qubit});
     }
 
   return pg;
@@ -518,10 +593,8 @@ list<ParallelGates> Simulation::splitRemoteGates(const ParallelGates& rgates,
   list<ParallelGates> pgates_list;
   
   for (const auto& gate : rgates)
-    {      
-      pgates_list.push_back(splitRemoteGate(gate, architecture, mapping, cores));
-    }
-
+    pgates_list.push_back(splitRemoteGate(gate, architecture, mapping, cores));
+    
   return pgates_list;
 }
 
@@ -562,13 +635,14 @@ list<ParallelGates> Simulation::sequenceParallelGates(const ParallelGates& lgate
 // ----------------------------------------------------------------------
 // replace the ParallelGates in the circuit pointed by it_pgates with
 // the pgates_list_seq and return the first ParallelGate in the list
-ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::iterator it_pgates,
+ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::iterator& it_pgates,
 						      list<ParallelGates>& circuit,
 						      const list<ParallelGates>& pgates_list_seq)
 {
-  it_pgates = circuit.erase(it_pgates);
-  circuit.insert(it_pgates, pgates_list_seq.begin(), pgates_list_seq.end());
 
+  it_pgates = circuit.erase(it_pgates);
+  it_pgates = circuit.insert(it_pgates, pgates_list_seq.begin(), pgates_list_seq.end());
+  
   return *it_pgates;
 }
 
@@ -578,7 +652,7 @@ ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::itera
 // in the execution of different teleportation aimed at moving one of
 // the involved qubits from source to destination. The circuit is
 // updated accordingly to accommodate the additional introduced slices
-ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator it_pgates,
+ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator& it_pgates,
 							   list<ParallelGates>& circuit,
 							   const Architecture& architecture,
 							   Mapping& mapping, Cores& cores)
@@ -590,15 +664,12 @@ ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::
 
   ParallelGates lgates, rgates;
   splitLocalRemoteGates(pgates, mapping, lgates, rgates);
-
-  cout << "after splitLocalRemoteGates: ";
-  cout << "local: "; displayGates(lgates, false);
-  cout << "remote: "; displayGates(rgates, true);
   
   list<ParallelGates> pgates_list_par = splitRemoteGates(rgates, architecture, mapping, cores);
   
   list<ParallelGates> pgates_list_seq = sequenceParallelGates(lgates, pgates_list_par);
-  ParallelGates pg = insertSequenceParallelGates(it_pgates, circuit, pgates_list_seq);
 
+  ParallelGates pg = insertSequenceParallelGates(it_pgates, circuit, pgates_list_seq);
+  
   return pg;
 }
