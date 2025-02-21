@@ -65,7 +65,7 @@ int Simulation::selectDestinationCore(const Architecture& architecture,
 {
   int selected_core;
   
-  if (architecture.teleportation_type == TP_TYPE_MESH)
+  if (architecture.teleportation_type == TP_TYPE_MESH || architecture.dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
     {
       assert(gate.size() == 2);
       auto it = gate.begin(); 
@@ -445,6 +445,8 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 				Mapping& mapping, Cores& cores)
 {
   Statistics global_stats;
+
+  cores.saveHistory(); // save the initial state of the cores
   
   // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation
   list<ParallelGates> lcircuit = circuit.circuit;

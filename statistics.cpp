@@ -48,6 +48,22 @@ int Statistics::countCommunications(const Cores& cores, const int src, const int
 
 vector<vector<int> > Statistics::getIntercoreCommunications(const Cores& cores)
 {
+  /*
+  int t = 0;
+  for (const auto& vcores : cores.history)
+    {
+      cout << "time " << t++ << endl;
+      for (int i=0; i<vcores.size(); i++)
+	{
+	  cout << "core " << i << ": ";
+	  for (int q : vcores[i])
+	    cout << q << ", ";
+	  cout << endl;
+	}
+      cout << endl;
+    }
+  */
+  
   int ncores = cores.cores.size();
   vector<vector<int> > icc(ncores, vector<int>(ncores, 0)); // icc[s][d] = number of communications from s to d 
 

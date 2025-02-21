@@ -8,6 +8,10 @@ using namespace std;
 #define TP_TYPE_A2A  0
 #define TP_TYPE_MESH 1
 
+#define DST_SEL_LOAD_INDEPENDENT 0
+#define DST_SEL_LOAD_AWARE       1
+
+
 struct Architecture
 {
   int    mesh_x, mesh_y;
@@ -18,6 +22,7 @@ struct Architecture
   int    number_of_cores; // derived value
   bool   wireless_enabled;
   int    teleportation_type;
+  int    dst_selection_mode;
   bool   configured;
   
   Architecture() : configured(false) {}
@@ -34,7 +39,8 @@ struct Architecture
   void updateRadioChannels(const int nv);
   void updateWirelessEnabled(const int nv);
   void updateTeleportationType(const int nv);
-  
+  void updateDstSelectionMode(const int nv);
+
   void updateDerivedVariables();
 };
 
