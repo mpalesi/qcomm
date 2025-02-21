@@ -327,7 +327,7 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
       // inferred from the gate in general. For the case of
       // teleportation_type == MESH the target core is that hosting
       // the qubit in the secon input of the gate.
-      assert(g.size() >= 2);
+      assert(g.size() <= 2);
       auto it = g.begin(); 
       advance(it, 1);    
       int qb = *it;      
