@@ -58,6 +58,8 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateWirelessEnabled(stoi(value));
       else if (param == "teleportation_type")
 	arch.updateTeleportationType(stod(value));
+      else if (param == "dst_selection_mode")
+	arch.updateDstSelectionMode(stod(value));
       else if (param == "gate_delay")
 	params.updateGateDelay(stod(value));
       else if (param == "epr_delay")
@@ -80,6 +82,8 @@ void overrideParameters(const map<string,string>& params_override,
 	params.updateBitsInstruction(stoi(value));
       else if (param == "decode_time_per_instruction")
 	params.updateDecodeTime(stod(value));
+      else if (param == "stats_detailed")
+	params.updateStatsDetailed(stod(value));
       else
 	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }

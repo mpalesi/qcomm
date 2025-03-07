@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include "mapping.h"
 
 void Mapping::display()
@@ -8,12 +9,15 @@ void Mapping::display()
   
   int nqb = qubit2core.size();    
   for (int qb=0; qb<nqb; qb++)
-    cout << "qubit " << qb << " -> core " << qubit2core[qb] << endl;
+    {
+      assert(isMapped(qb));
+      cout << "qubit " << qb << " -> core " << qubit2core[qb] << endl;
+    }
 }
 
-vector<int> Mapping::defaultMapping(int nqubits, int ncores)
+map<int,int> Mapping::defaultMapping(int nqubits, int ncores)
 {
-  vector<int> q2c(nqubits, -1);
+  map<int,int> q2c;
   
   int core_id = 0;
   for (int qb=0; qb<nqubits; qb++)
@@ -26,3 +30,14 @@ vector<int> Mapping::defaultMapping(int nqubits, int ncores)
   return q2c;
 }
 
+bool Mapping::isMapped(const int qb) const
+{
+  return (qubit2core.find(qb) != qubit2core.end());
+}
+
+int Mapping::qubit2CoreSafe(const int qb) const
+{
+  assert(qubit2core.find(qb) != qubit2core.end());
+
+  return qubit2core.at(qb);
+}

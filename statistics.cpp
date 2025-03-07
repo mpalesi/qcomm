@@ -48,6 +48,22 @@ int Statistics::countCommunications(const Cores& cores, const int src, const int
 
 vector<vector<int> > Statistics::getIntercoreCommunications(const Cores& cores)
 {
+  /*
+  int t = 0;
+  for (const auto& vcores : cores.history)
+    {
+      cout << "time " << t++ << endl;
+      for (int i=0; i<vcores.size(); i++)
+	{
+	  cout << "core " << i << ": ";
+	  for (int q : vcores[i])
+	    cout << q << ", ";
+	  cout << endl;
+	}
+      cout << endl;
+    }
+  */
+  
   int ncores = cores.cores.size();
   vector<vector<int> > icc(ncores, vector<int>(ncores, 0)); // icc[s][d] = number of communications from s to d 
 
@@ -148,7 +164,8 @@ void Statistics::displayTeleportationsPerQubit(const Circuit& circuit, const Cor
   
 }
 
-void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch)
+void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
+			 const bool detailed)
 {
   cout << endl
        << "*** Statistics ***" << endl
@@ -163,14 +180,21 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
   getCoresStats(cores.history, arch, avg, min, max);
   cout << "Core utilization: " << avg << " avg, " << min << " min, " << max << " max" << endl;
 
-  cout << "Intercore communications (row is source, col is target):" << endl;
-  displayIntercoreCommunications(cores);
+  if (detailed) {
+    cout << "Intercore communications (row is source, col is target):" << endl;
+    displayIntercoreCommunications(cores);
+  }
 
-  cout << "Operations per qubit: ";
-  displayOperationsPerQubit(circuit);
+  if (detailed) {
+    cout << "Operations per qubit: ";
+    displayOperationsPerQubit(circuit);
+  }
 
-  cout << "Teleportations per qubit: ";
-  displayTeleportationsPerQubit(circuit, cores);
+  if (detailed) {
+    cout << "Teleportations per qubit: ";
+    displayTeleportationsPerQubit(circuit, cores);
+  }
+
   
   communication_time.display();
   double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time;

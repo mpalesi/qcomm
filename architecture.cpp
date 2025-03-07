@@ -9,21 +9,30 @@ void Architecture::display() const
   cout << endl
        << "*** Architecture ***" << endl
        << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
-       << "qubits per core: " << qubits_per_core
+       << "qubits_per_core: " << qubits_per_core
        << " (total physical qubits: " << mesh_x * mesh_y * qubits_per_core << ")" << endl
-       << "ltm ports: " << ltm_ports << endl;
+       << "ltm_ports: " << ltm_ports << endl;
 
-  cout << "teleportation type: ";
+  cout << "teleportation_type: " << teleportation_type;
   if (teleportation_type == TP_TYPE_A2A)
-    cout << "all to all" << endl;
+    cout << " (all to all)" << endl;
   else if (teleportation_type == TP_TYPE_MESH)
-    cout << "mesh" << endl;
+    cout << " (mesh)" << endl;
   else 
-    cout << "???" << endl;
+    cout << " (??\?)" << endl;
 
+  cout << "dst_selection_mode: " << dst_selection_mode;
+  if (dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
+    cout << " (load independent)" << endl;
+  else if (dst_selection_mode == DST_SEL_LOAD_AWARE)
+    cout << " (load aware)" << endl;
+  else
+    cout << " (??\?)" << endl;
+  
+
+  cout << "wireless_enabled: " << wireless_enabled << endl;
   if (wireless_enabled)
-    cout << "wireless enabled" << endl
-	 << "radio_channels: " << radio_channels << endl;
+    cout << "\tradio_channels: " << radio_channels << endl;
 }
 
 bool Architecture::readFromFile(const string& file_name)
@@ -56,6 +65,8 @@ bool Architecture::readFromFile(const string& file_name)
 	iss >> wireless_enabled;
       else if (attribute == string("teleportation_type"))
 	iss >> teleportation_type;
+      else if (attribute == string("dst_selection_mode"))
+	iss >> dst_selection_mode;
       else {
 	cout << "Invalid attribute reading " << file_name
 	     << ": '" << attribute << "'" << endl;
@@ -112,6 +123,11 @@ void Architecture::updateWirelessEnabled(const int nv)
 void Architecture::updateTeleportationType(const int nv)
 {
   teleportation_type = nv;
+}
+
+void Architecture::updateDstSelectionMode(const int nv)
+{
+  dst_selection_mode = nv;
 }
 
 void Architecture::updateDerivedVariables()

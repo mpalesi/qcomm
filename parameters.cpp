@@ -55,6 +55,8 @@ bool Parameters::readFromFile(const string& file_name)
 	iss >> bits_instruction;
       else if (param == string("decode_time_per_instruction"))
 	iss >> decode_time_per_instruction;
+      else if (param == string("stats_detailed"))
+	iss >> stats_detailed;
       else {
 	cout << "Invalid patameter reading " << file_name
 	     << ": '" << param << "'" << endl;
@@ -120,4 +122,9 @@ void Parameters::updateBitsInstruction(const int nv)
 void Parameters::updateDecodeTime(const double nv)
 {
   decode_time_per_instruction = nv;
+}
+
+void Parameters::updateStatsDetailed(const bool nv)
+{
+  stats_detailed = nv;
 }

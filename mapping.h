@@ -1,13 +1,13 @@
 #ifndef __MAPPING_H__
 #define __MAPPING_H__
 
-#include <vector>
+#include <map>
 
 using namespace std;
 
 struct Mapping
 {
-  vector<int> qubit2core; // Indicates where a qubit is mapped onto which core
+  map<int,int> qubit2core; // Indicates where a qubit is mapped onto which core
 
   Mapping() {}
 
@@ -17,8 +17,10 @@ struct Mapping
 
   void display();
 
-  
-  vector<int> defaultMapping(int nqubits, int ncores);
+  map<int,int> defaultMapping(int nqubits, int ncores);
+
+  bool isMapped(const int qb) const;
+  int qubit2CoreSafe(const int qb) const;
 };
 
 #endif
