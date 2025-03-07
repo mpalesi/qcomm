@@ -164,7 +164,8 @@ void Statistics::displayTeleportationsPerQubit(const Circuit& circuit, const Cor
   
 }
 
-void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch)
+void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
+			 const bool detailed)
 {
   cout << endl
        << "*** Statistics ***" << endl
@@ -179,14 +180,21 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
   getCoresStats(cores.history, arch, avg, min, max);
   cout << "Core utilization: " << avg << " avg, " << min << " min, " << max << " max" << endl;
 
-  cout << "Intercore communications (row is source, col is target):" << endl;
-  displayIntercoreCommunications(cores);
+  if (detailed) {
+    cout << "Intercore communications (row is source, col is target):" << endl;
+    displayIntercoreCommunications(cores);
+  }
 
-  cout << "Operations per qubit: ";
-  displayOperationsPerQubit(circuit);
+  if (detailed) {
+    cout << "Operations per qubit: ";
+    displayOperationsPerQubit(circuit);
+  }
 
-  cout << "Teleportations per qubit: ";
-  displayTeleportationsPerQubit(circuit, cores);
+  if (detailed) {
+    cout << "Teleportations per qubit: ";
+    displayTeleportationsPerQubit(circuit, cores);
+  }
+
   
   communication_time.display();
   double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time;

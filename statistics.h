@@ -24,7 +24,8 @@ struct Statistics
   
   void updateStatistics(const Statistics& stats, const double th);
   
-  void display(const Circuit& circuit, const Cores& cores, const Architecture& arch);
+  void display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
+	       const bool detailed = true);
 
   void getCoresStats(const vector<Core>& cores, const Architecture& arch,
 		     double& avg_u, double& min_u, double& max_u);

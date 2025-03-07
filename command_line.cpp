@@ -82,6 +82,8 @@ void overrideParameters(const map<string,string>& params_override,
 	params.updateBitsInstruction(stoi(value));
       else if (param == "decode_time_per_instruction")
 	params.updateDecodeTime(stod(value));
+      else if (param == "stats_detailed")
+	params.updateStatsDetailed(stod(value));
       else
 	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }
