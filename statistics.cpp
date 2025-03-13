@@ -197,10 +197,11 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   
   communication_time.display();
-  double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time;
+  double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time;
   cout << "Computation time (s): " << computation_time << endl
        << "Fetch time (s): " << fetch_time << endl
        << "Decode time (s): " << decode_time << endl
+       << "Dispatch time (s): " << dispatch_time << endl
        << "Execution time (s): " << execution_time << endl
        << "Coherence (%): " << 100.0*exp(-execution_time / 268e-6) << endl;
   

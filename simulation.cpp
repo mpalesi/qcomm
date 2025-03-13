@@ -327,12 +327,14 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
       // inferred from the gate in general. For the case of
       // teleportation_type == MESH the target core is that hosting
       // the qubit in the secon input of the gate.
+      
       assert(g.size() <= 2);
       auto it = g.begin(); 
       advance(it, 1);    
       int qb = *it;      
       int dst_core = mapping.qubit2CoreSafe(qb);
       Communication comm(0, dst_core, volume);
+      pc.push_back(comm);
     }
 
   return pc;
@@ -346,7 +348,7 @@ void Simulation::dispatchContribution(Statistics& stats,
 				      const Parameters& parameters,
 				      const Mapping& mapping,
 				      const NoC& noc)
-{  
+{
   ParallelCommunications pcomms = makeDispatchCommunications(pgates, architecture, parameters, mapping);
   stats.dispatch_time = noc.getCommunicationTime(pcomms);
 
@@ -366,17 +368,20 @@ Statistics Simulation::simulate(const ParallelGates& pgates, const Architecture&
   ParallelGates lgates, rgates;
 
   splitLocalRemoteGates(pgates, mapping, lgates, rgates);  
-
+  
   assert(!rgates.empty() || !lgates.empty());
 
   Statistics stats_local = localExecution(lgates, parameters);
+
   Statistics stats_remote = remoteExecution(architecture, noc, parameters,
 					    rgates, mapping, cores);
 
   Statistics stats_overall = mergeLocalRemoteStatistics(stats_local, stats_remote);
 
   fetchContribution(stats_overall, pgates, architecture, parameters);
+
   decodeContribution(stats_overall, pgates, parameters);
+
   dispatchContribution(stats_overall, pgates, architecture, parameters, mapping, noc);
 		       
   return stats_overall;
@@ -453,22 +458,18 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
   
   for (list<ParallelGates>::iterator it_pgates = lcircuit.begin();
        it_pgates != lcircuit.end(); it_pgates++)
-    {      
+    {
       ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit,
 								      architecture, mapping, cores);
-      
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
-      
-      
+            
       freeUnusedAncillas(it_pgates, lcircuit, mapping, cores);
-      
       
       double th = noc.getThroughput(stats.intercore_volume,
 				    stats.communication_time.getTotalTime());
-      
+
       global_stats.updateStatistics(stats, th);
-      
       
     }
 

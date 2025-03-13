@@ -78,18 +78,23 @@ bool NoC::commIsInQueue(const int id, const queue<pair<int,int> >& qc) const
   return false;
 }
 
-int NoC::computeStartTime(const queue<pair<int,int> >& qc) const
+int NoC::computeStartTime(const queue<pair<int,int>, deque<pair<int,int>>>& qc) const
 {
+  /*
   int st = 0;
   queue<pair<int,int> > temp = qc;
 
   while (!temp.empty())
     {
-      st += temp.front().second; 
+      // st += temp.front().second;
+      st = temp.front().second; 
       temp.pop();
     }
 
   return st;
+  */
+  
+  return qc.back().second;
 }
 
 int NoC::nextClockCycle(const map<pair<int,int>, queue<pair<int,int> > >& links_occupation) const
@@ -113,7 +118,7 @@ int NoC::nextClockCycle(const map<pair<int,int>, queue<pair<int,int> > >& links_
   return min_cc;
 }
 
-bool NoC::updateLinksOccupation(map<pair<int,int>, queue<pair<int,int> > >& links_occupation,
+bool NoC::updateLinksOccupation(map<pair<int,int>, queue<pair<int,int>, deque<pair<int,int>>>>& links_occupation,
 				const int cid, Communication& comm,
 				const int clock_cycle) const
 {
@@ -176,12 +181,12 @@ bool NoC::updateLinksOccupation(map<pair<int,int>, queue<pair<int,int> > >& link
 
 double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) const
 {
-  map<pair<int,int>, queue<pair<int,int> > > links_occupation; // links_occupation[(node1,node2)] --> (queue of pairs (comm_id, when the link is released)
+  map<pair<int,int>, queue<pair<int,int>, deque<pair<int,int>>>> links_occupation; // links_occupation[(node1,node2)] --> queue of pairs (comm_id, when the link is released)
   map<int,Communication> pcomms_id = assignCommunicationIds(pcomms);
   int clock_cycle = 0;
   
   while (!pcomms_id.empty())
-    {
+    {      
       // DEBUG      cout << endl << endl << "cc: " << clock_cycle << endl;
       
       for (map<int,Communication>::iterator it = pcomms_id.begin(); it != pcomms_id.end(); )
