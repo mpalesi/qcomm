@@ -350,11 +350,16 @@ void Simulation::dispatchContribution(Statistics& stats,
 				      const NoC& noc)
 {
   ParallelCommunications pcomms = makeDispatchCommunications(pgates, architecture, parameters, mapping);
-  stats.dispatch_time = noc.getCommunicationTime(pcomms);
 
-  // add the one-hop delay for communication between MC to core 0
-  stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+  if (architecture.wireless_enabled)
+    stats.dispatch_time = noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+  else {
+    stats.dispatch_time = noc.getCommunicationTime(pcomms);
 
+    // Only for wired interconnect add the one-hop delay for communication between MC to core 0.
+    stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+  }
+  
   stats.intercore_comms += pcomms.size();
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
 }

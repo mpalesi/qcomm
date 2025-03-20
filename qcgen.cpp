@@ -9,6 +9,10 @@
 using namespace std;
 using Gate = vector<int>;
 
+using GateGrover = tuple<string, vector<int>>;
+using CircuitSlicesGrover = vector<vector<GateGrover>>;
+
+
 void gate1(const int q, const bool nl)
 {
   cout << "(" << q << ") ";
@@ -114,6 +118,85 @@ void quantumVolume(const int n)
 
 
 
+
+
+// Aggiunge un gate a una slice
+void add_gate(CircuitSlicesGrover &slices, const string &gate_name, vector<int> qubits) {
+    if (slices.empty() || gate_name == "CZ") {
+        slices.push_back({});
+    }
+    slices.back().push_back(make_tuple(gate_name, qubits));
+}
+
+// Costruisce il circuito di Grover
+CircuitSlicesGrover grover_circuit(int n) {
+    CircuitSlicesGrover slices;
+
+    // 1. Applicare H a tutti i qubit (inizializzazione)
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("H", vector<int>{i}));
+    }
+
+    // 2. Oracle: Supponiamo di voler marcare |111...1>
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("X", vector<int>{i}));
+    }
+    
+    slices.push_back({});
+    slices.back().push_back(make_tuple("CZ", vector<int>{n-2, n-1})); // Controllo di fase
+
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("X", vector<int>{i}));
+    }
+
+    // 3. Diffusione di Grover (amplificazione dell'ampiezza)
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("H", vector<int>{i}));
+    }
+
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("X", vector<int>{i}));
+    }
+
+    slices.push_back({});
+    slices.back().push_back(make_tuple("CZ", vector<int>{n-2, n-1})); // Controllo di fase
+
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("X", vector<int>{i}));
+    }
+
+    slices.push_back({});
+    for (int i = 0; i < n; i++) {
+        slices.back().push_back(make_tuple("H", vector<int>{i}));
+    }
+
+    return slices;
+}
+
+void grover(const int n)
+{
+  CircuitSlicesGrover slices = grover_circuit(n);
+
+  for (const auto &slice : slices) {
+    for (const auto &gate : slice) {
+      vector<int> qubits = get<1>(gate);
+      if (qubits.size() == 1) {
+	gate1(qubits[0], false);  
+      } else if (qubits.size() == 2) {
+	gate2(qubits[0], qubits[1], false);
+      }
+    }
+    cout << endl;
+  }
+}
+
+
 int main(int argc, char* argv[])
 {
   if (argc < 3)
@@ -139,6 +222,8 @@ int main(int argc, char* argv[])
     cuccaroAdder(nqubits/2);
   else if (cname == "qv")
     quantumVolume(nqubits);
+  else if (cname == "grover")
+    grover(nqubits);
   
   return 0;
 }
