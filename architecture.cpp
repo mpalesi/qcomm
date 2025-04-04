@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include "architecture.h"
-
+#include "mapping.h"
 
 void Architecture::display() const
 {
@@ -33,6 +33,14 @@ void Architecture::display() const
   cout << "wireless_enabled: " << wireless_enabled << endl;
   if (wireless_enabled)
     cout << "\tradio_channels: " << radio_channels << endl;
+
+  cout << "mapping_type: " << mapping_type;
+  if (mapping_type == MAP_RANDOM)
+    cout << " (random)" << endl;
+  else if (mapping_type == MAP_SEQUENTIAL)
+    cout << " (sequential)" << endl;
+  else
+    cout << " (??\?)" << endl;
 }
 
 bool Architecture::readFromFile(const string& file_name)
@@ -67,6 +75,8 @@ bool Architecture::readFromFile(const string& file_name)
 	iss >> teleportation_type;
       else if (attribute == string("dst_selection_mode"))
 	iss >> dst_selection_mode;
+      else if (attribute == string("mapping_type"))
+	iss >> mapping_type;
       else {
 	cout << "Invalid attribute reading " << file_name
 	     << ": '" << attribute << "'" << endl;
@@ -128,6 +138,11 @@ void Architecture::updateTeleportationType(const int nv)
 void Architecture::updateDstSelectionMode(const int nv)
 {
   dst_selection_mode = nv;
+}
+
+void Architecture::updateMappingType(const int nv)
+{
+  mapping_type = nv;
 }
 
 void Architecture::updateDerivedVariables()

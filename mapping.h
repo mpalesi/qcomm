@@ -3,6 +3,9 @@
 
 #include <map>
 
+#define MAP_RANDOM     0
+#define MAP_SEQUENTIAL 1
+
 using namespace std;
 
 struct Mapping
@@ -11,13 +14,12 @@ struct Mapping
 
   Mapping() {}
 
-  Mapping(int nqubits, int ncores) {
-    qubit2core = this->defaultMapping(nqubits, ncores);
-  }
+  Mapping(const int nqubits, const int ncores, const int mapping_type);
 
   void display();
 
-  map<int,int> defaultMapping(int nqubits, int ncores);
+  map<int,int> sequentialMapping(const int nqubits, const int ncores);
+  map<int,int> randomMapping(const int nqubits, const int ncores);
 
   bool isMapped(const int qb) const;
   int qubit2CoreSafe(const int qb) const;

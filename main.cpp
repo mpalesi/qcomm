@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
       
   noc.display();
   
-  Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores);
+  Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores, architecture.mapping_type);
 
   Cores cores(architecture, mapping);
   cores.display();

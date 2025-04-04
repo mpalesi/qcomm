@@ -23,6 +23,7 @@ struct Architecture
   bool   wireless_enabled;
   int    teleportation_type;
   int    dst_selection_mode;
+  int    mapping_type;
   bool   configured;
   
   Architecture() : configured(false) {}
@@ -40,6 +41,7 @@ struct Architecture
   void updateWirelessEnabled(const int nv);
   void updateTeleportationType(const int nv);
   void updateDstSelectionMode(const int nv);
+  void updateMappingType(const int nv);
 
   void updateDerivedVariables();
 };
