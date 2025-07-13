@@ -466,16 +466,20 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
     {
       ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit,
 								      architecture, mapping, cores);
+
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
             
       freeUnusedAncillas(it_pgates, lcircuit, mapping, cores);
-      
+
+      /*
       double th = noc.getThroughput(stats.intercore_volume,
 				    stats.communication_time.getTotalTime());
+      */
 
-      global_stats.updateStatistics(stats, th);
-      
+      // global_stats.updateStatistics(stats, th);
+      global_stats.updateStatistics(stats);
+
     }
 
   return global_stats;

@@ -22,11 +22,13 @@ struct Statistics
   
   Statistics();
   
-  void updateStatistics(const Statistics& stats, const double th);
+  void updateStatistics(const Statistics& stats);
   
   void display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
 	       const bool detailed = true);
 
+  double getExecutionTime() const;
+  
   void getCoresStats(const vector<Core>& cores, const Architecture& arch,
 		     double& avg_u, double& min_u, double& max_u);
   void getCoresStats(const list<vector<Core> >& history, const Architecture& arch,

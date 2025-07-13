@@ -31,7 +31,6 @@ struct NoC
   void display();
     
   double getCommunicationTime(const ParallelCommunications& pc) const;
-  double getThroughput(int ncomms, double etime) const;
 
   double getCommunicationTimeWired(const ParallelCommunications& pc) const;
   double getCommunicationTimeWireless(const ParallelCommunications& pc) const;

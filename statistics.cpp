@@ -21,6 +21,11 @@ Statistics::Statistics()
 }
 
 
+double Statistics::getExecutionTime() const
+{
+  return (computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time);
+}
+
 int Statistics::countCommunications(const Cores& cores, const int src, const int dst)
 {
   int n = 0;
@@ -197,7 +202,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   
   communication_time.display();
-  double execution_time = computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time;
+  double execution_time = getExecutionTime();
   cout << "Computation time (s): " << computation_time << endl
        << "Fetch time (s): " << fetch_time << endl
        << "Decode time (s): " << decode_time << endl
@@ -207,7 +212,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
   
 }
 
-void Statistics::updateStatistics(const Statistics& stats, const double th)
+void Statistics::updateStatistics(const Statistics& stats)
 {
   executed_gates += stats.executed_gates;
   intercore_comms += stats.intercore_comms;
@@ -223,7 +228,9 @@ void Statistics::updateStatistics(const Statistics& stats, const double th)
   fetch_time += stats.fetch_time;
   decode_time += stats.decode_time;
   dispatch_time += stats.dispatch_time;
-  
+
+  double th = stats.intercore_volume / stats.getExecutionTime();
+    
   // update throughput stats
   if (th > 0.0)
     {      

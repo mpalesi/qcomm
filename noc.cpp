@@ -287,9 +287,3 @@ int NoC::getCoreID(const int x, const int y) const
 {
   return y * mesh_x + x;
 }
-
-
-double NoC::getThroughput(int volume, double etime) const
-{
-  return volume / etime;
-}
