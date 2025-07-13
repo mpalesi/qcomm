@@ -55,6 +55,8 @@ bool Parameters::readFromFile(const string& file_name)
 	iss >> bits_instruction;
       else if (param == string("decode_time_per_instruction"))
 	iss >> decode_time_per_instruction;
+      else if (param == string("t1"))
+	iss >> t1;
       else if (param == string("stats_detailed"))
 	iss >> stats_detailed;
       else {
@@ -122,6 +124,11 @@ void Parameters::updateBitsInstruction(const int nv)
 void Parameters::updateDecodeTime(const double nv)
 {
   decode_time_per_instruction = nv;
+}
+
+void Parameters::updateThermalRelaxationTime(const double nv)
+{
+  t1 = nv;
 }
 
 void Parameters::updateStatsDetailed(const bool nv)

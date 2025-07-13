@@ -19,8 +19,10 @@ struct Parameters
   int    bits_instruction; // number of bits used for encoding an instruction
   double decode_time_per_instruction;
   bool   stats_detailed;
+  double t1; // thermal relaxation time
   
-  Parameters() : gate_delay(0.0), epr_delay(0.0), dist_delay(0.0), pre_delay(0.0), post_delay(0.0), noc_clock_time(0.0), wbit_rate(0.0), token_pass_time(0.0), memory_bandwidth(0.0), bits_instruction(0), decode_time_per_instruction(0.0) {}
+  
+  Parameters() : gate_delay(0.0), epr_delay(0.0), dist_delay(0.0), pre_delay(0.0), post_delay(0.0), noc_clock_time(0.0), wbit_rate(0.0), token_pass_time(0.0), memory_bandwidth(0.0), bits_instruction(0), decode_time_per_instruction(0.0), stats_detailed(true), t1(0.0) {}
 
   void display() const;
 
@@ -37,6 +39,7 @@ struct Parameters
   void updateMemoryBandwidth(const double nv);
   void updateBitsInstruction(const int nv);
   void updateDecodeTime(const double nv);
+  void updateThermalRelaxationTime(const double nv);
   void updateStatsDetailed(const bool nv);
 
 };

@@ -10,3 +10,4 @@ bits_instruction 4
 decode_time_per_instruction 10e-9
 noc_clock_time 10e-9
 stats_detailed 1
+t1 268e-6

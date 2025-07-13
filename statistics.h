@@ -4,6 +4,7 @@
 #include "core.h"
 #include "circuit.h"
 #include "architecture.h"
+#include "parameters.h"
 #include "communication_time.h"
 
 struct Statistics
@@ -25,7 +26,7 @@ struct Statistics
   void updateStatistics(const Statistics& stats);
   
   void display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
-	       const bool detailed = true);
+	       const Parameters& params);
 
   double getExecutionTime() const;
   

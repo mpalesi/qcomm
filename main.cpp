@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
   Simulation simulation;
   Statistics stats = simulation.simulate(circuit, architecture, noc, parameters, mapping, cores);
   
-  stats.display(circuit, cores, architecture, parameters.stats_detailed);
+  stats.display(circuit, cores, architecture, parameters);
   
   
   return 0;
