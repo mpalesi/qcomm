@@ -205,7 +205,7 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 				       const ParallelGates& rgates,
 				       Mapping& mapping, Cores& cores)
 {
-  Statistics stats(cores.getNumCores());
+  Statistics stats(architecture.number_of_cores);
 
   if (!rgates.empty())
     {
@@ -233,6 +233,9 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 			  // qb can be teleported from src_core to dst_core
 			  tmp_available_ltm_ports[src_core]--;
 			  tmp_available_ltm_ports[dst_core]--;
+
+			  // If we reach this point it means the qb will be teleported
+			  stats.addTeleportationsPerQubit(qb);
 			}
 		      else
 			{
@@ -284,8 +287,13 @@ Statistics Simulation::mergeLocalRemoteStatistics(const Statistics& stats_local,
   stats.computation_time = (stats_local.computation_time > stats_remote.computation_time) ?
     stats_local.computation_time : stats_remote.computation_time;
 
-  // Incorporate the intercore_comms stats into the overall stats
+  // Incorporate the intercore_comms stats (only available in
+  // stats_remote) into the overall stats
   stats.intercore_comms = stats_remote.intercore_comms;
+
+  // Incorporate the teleportations_per_qubit stats (only available in
+  // stats_remote) into the overall stats
+  stats.teleportations_per_qubit = stats_remote.teleportations_per_qubit;
   
   return stats;
 }
@@ -303,9 +311,7 @@ void Simulation::fetchContribution(Statistics& stats,
   for (Gate g : pgates)
     bundle_size += parameters.bits_instruction + g.size() * bits_qubit_addr;
 
-  cout << "bundle_size: " << bundle_size << "\t memory_bandwidth: " << parameters.memory_bandwidth << endl;
   stats.fetch_time = bundle_size / parameters.memory_bandwidth;
-  cout << "fetch_time = " << stats.fetch_time << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -461,9 +467,8 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 				const NoC& noc, const Parameters& parameters,
 				Mapping& mapping, Cores& cores)
 {
-  Statistics global_stats(cores.getNumCores());
-  cout << "global_stats.fetch_time = " << global_stats.fetch_time << endl;
-  
+  Statistics global_stats(architecture.number_of_cores);
+    
   cores.saveHistory(); // save the initial state of the cores
   
   // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation

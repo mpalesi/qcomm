@@ -2,6 +2,7 @@
 #define __STATISTICS_H__
 
 #include <vector>
+#include <map>
 #include "core.h"
 #include "circuit.h"
 #include "architecture.h"
@@ -22,7 +23,8 @@ struct Statistics
   double decode_time;
   double dispatch_time;
   vector<vector<int>> intercore_comms; // row is source, col is target
-
+  map<int,int> teleportations_per_qubit;
+  
   Statistics();
   Statistics(const int ncores);
   
@@ -38,20 +40,17 @@ struct Statistics
   void getCoresStats(const list<vector<Core> >& history, const Architecture& arch,
 		     double& avg_u, double& min_u, double& max_u);
 
-  void displayIntercoreCommunications(const Cores& cores);
-  //  int countCommunications(const Cores& cores, const int src, const int dst);
-  //  vector<vector<int> > getIntercoreCommunications(const Cores& cores);
+  void displayIntercoreCommunications();
 
   void displayOperationsPerQubit(const Circuit& circuit);
   vector<int> getOperationsPerQubit(const Circuit& circuit);
 
-  void displayTeleportationsPerQubit(const Circuit& circuit, const Cores& cores);
-  vector<int> getTeleportationsPerQubit(const Circuit& circuit, const Cores& cores);
-  int getTeleportationsPerQubit(const int qb, const Cores& cores);
+  void displayTeleportationsPerQubit();
+
   int qbitToCore(const int qb, const vector<Core> cores);
 
   void addIntercoreCommunications(const ParallelCommunications& pcomms);
-
+  void addTeleportationsPerQubit(const int qb);
 };
 
 #endif

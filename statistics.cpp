@@ -33,13 +33,12 @@ double Statistics::getExecutionTime() const
   return (computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time);
 }
 
-void Statistics::displayIntercoreCommunications(const Cores& cores)
-{
-  int ncores = cores.getNumCores();
 
-  for (int s=0; s<ncores; s++)
+void Statistics::displayIntercoreCommunications()
+{
+  for (int s=0; s<(int)intercore_comms.size(); s++)
     {
-      for (int d=0; d<ncores; d++)
+      for (int d=0; d<(int)intercore_comms[s].size(); d++)
 	cout << intercore_comms[s][d] << " ";
       cout << endl;
     }
@@ -78,46 +77,11 @@ int Statistics::qbitToCore(const int qb, const vector<Core> cores)
   return -1;
 }
 
-int Statistics::getTeleportationsPerQubit(const int qb, const Cores& cores)
+void Statistics::displayTeleportationsPerQubit()
 {
-  int tps = 0;
-
-  for (list<vector<Core> >::const_iterator it_curr = cores.history.begin();
-       it_curr != cores.history.end(); ++it_curr)
-    {
-      list<vector<Core> >::const_iterator it_next = next(it_curr);
-      if (it_next != cores.history.end())
-	{
-	  int core_s = qbitToCore(qb, *it_curr);
-	  int core_d = qbitToCore(qb, *it_next);
-	  assert(core_s != -1 && core_d != -1);
-
-	  if (core_s != core_d)
-	    tps++;
-	}
-    }
-  
-  return tps;
-}
-
-vector<int> Statistics::getTeleportationsPerQubit(const Circuit& circuit, const Cores& cores)
-{
-  vector<int> tpsqb(circuit.number_of_qubits);
-
-  for (int qb = 0; qb < circuit.number_of_qubits; qb++)
-    tpsqb[qb] = getTeleportationsPerQubit(qb, cores);
-  
-  return tpsqb;
-}
-
-void Statistics::displayTeleportationsPerQubit(const Circuit& circuit, const Cores& cores)
-{
-  vector<int> tpsqb = getTeleportationsPerQubit(circuit, cores);
-
-  for (int tps : tpsqb)
-    cout << tps << ", ";
-  cout << endl;
-  
+  for (const auto& pair : teleportations_per_qubit) 
+    cout << "q(" << pair.first << "):" << pair.second << ", ";  
+  cout << endl;  
 }
 
 void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
@@ -138,7 +102,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   if (params.stats_detailed) {
     cout << "Intercore communications (row is source, col is target):" << endl;
-    displayIntercoreCommunications(cores);
+    displayIntercoreCommunications();
   }
 
   if (params.stats_detailed) {
@@ -148,7 +112,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   if (params.stats_detailed) {
     cout << "Teleportations per qubit: ";
-    displayTeleportationsPerQubit(circuit, cores);
+    displayTeleportationsPerQubit();
   }
 
   
@@ -177,7 +141,6 @@ void Statistics::updateStatistics(const Statistics& stats)
   communication_time.t_clas += stats.communication_time.t_clas;
   communication_time.t_post += stats.communication_time.t_post;
 
-  cout << "fetch_time into update = " << stats.fetch_time << endl;
   fetch_time += stats.fetch_time;
   decode_time += stats.decode_time;
   dispatch_time += stats.dispatch_time;
@@ -201,6 +164,10 @@ void Statistics::updateStatistics(const Statistics& stats)
   for (int i = 0; i < ncores; ++i)
     for (int j = 0; j < ncores; ++j)
       intercore_comms[i][j] += stats.intercore_comms[i][j];
+
+  // Accumulate teleportations_per_qubit
+  for (const auto& pair : stats.teleportations_per_qubit)
+    teleportations_per_qubit[pair.first] += pair.second;
 }
 
 
@@ -248,3 +215,7 @@ void Statistics::addIntercoreCommunications(const ParallelCommunications& pcomms
     intercore_comms[comm.src_core][comm.dst_core]++;
 }
 
+void Statistics::addTeleportationsPerQubit(const int qb)
+{
+  teleportations_per_qubit[qb]++;
+}
