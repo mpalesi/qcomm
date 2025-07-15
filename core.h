@@ -17,6 +17,8 @@ struct Cores
   
   Cores(const Architecture& architecture, const Mapping& mapping);
 
+  int getNumCores() const;
+  
   bool allocateAncilla(const int core_id,
 		       const Architecture& architecture,
 		       Mapping& mapping, int& ancilla);
@@ -24,7 +26,7 @@ struct Cores
   
   void saveHistory();
   
-  void display();  
+  void display(); 
 };
 
 #endif

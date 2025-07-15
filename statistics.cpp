@@ -2,14 +2,16 @@
 #include <limits>
 #include <algorithm>
 #include <cassert>
+#include "utils.h"
 #include "statistics.h"
 
 using namespace std;
 
+
 Statistics::Statistics()
 {
   executed_gates = 0;
-  intercore_comms = 0;
+  total_intercore_comms = 0;
   intercore_volume = 0;
   computation_time = 0.0;
   avg_throughput = 0.0;
@@ -20,76 +22,25 @@ Statistics::Statistics()
   dispatch_time = 0.0;
 }
 
+Statistics::Statistics(const int ncores) : Statistics()
+{
+  intercore_comms = vector<vector<int>>(ncores, vector<int>(ncores, 0));
+}
+
 
 double Statistics::getExecutionTime() const
 {
   return (computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time);
 }
 
-int Statistics::countCommunications(const Cores& cores, const int src, const int dst)
-{
-  int n = 0;
-  
-  for (list<vector<Core> >::const_iterator it_curr = cores.history.begin();
-       it_curr != cores.history.end(); ++it_curr)
-    {
-      list<vector<Core> >::const_iterator it_next = next(it_curr);
-      if (it_next != cores.history.end())
-	{
-	  Core core_src = (*it_curr)[src];
-	  Core core_dst = (*it_next)[dst];
-
-	  vector<int> intersection;
-	  set_intersection(core_src.begin(), core_src.end(),
-			   core_dst.begin(), core_dst.end(),
-			   inserter(intersection, intersection.begin()));
-
-	  n += intersection.size();
-	}
-    }
-  
-  return n;
-}
-
-vector<vector<int> > Statistics::getIntercoreCommunications(const Cores& cores)
-{
-  /*
-  int t = 0;
-  for (const auto& vcores : cores.history)
-    {
-      cout << "time " << t++ << endl;
-      for (int i=0; i<vcores.size(); i++)
-	{
-	  cout << "core " << i << ": ";
-	  for (int q : vcores[i])
-	    cout << q << ", ";
-	  cout << endl;
-	}
-      cout << endl;
-    }
-  */
-  
-  int ncores = cores.cores.size();
-  vector<vector<int> > icc(ncores, vector<int>(ncores, 0)); // icc[s][d] = number of communications from s to d 
-
-  for (int s=0; s<ncores; s++)
-    for (int d=0; d<ncores; d++)
-      if (s != d)
-	icc[s][d] = countCommunications(cores, s, d);
-  
-  return icc;
-}
-
 void Statistics::displayIntercoreCommunications(const Cores& cores)
 {
-  vector<vector<int> > icc = getIntercoreCommunications(cores);
-
-  int ncores = cores.cores.size();
+  int ncores = cores.getNumCores();
 
   for (int s=0; s<ncores; s++)
     {
       for (int d=0; d<ncores; d++)
-	cout << icc[s][d] << " ";
+	cout << intercore_comms[s][d] << " ";
       cout << endl;
     }
 }
@@ -175,7 +126,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
   cout << endl
        << "*** Statistics ***" << endl
        << "Executed gates: " << executed_gates << endl
-       << "Intercore communications: " << intercore_comms << endl
+       << "Intercore communications: " << total_intercore_comms << endl
        << "Intercore traffic volume (bits): " << intercore_volume << endl
        << "Throughput (Mbps): " << avg_throughput/1.0e6 << " avg, " << max_throughput/1.0e6 << " peak"
        << endl;
@@ -208,14 +159,15 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
        << "Decode time (s): " << decode_time << endl
        << "Dispatch time (s): " << dispatch_time << endl
        << "Execution time (s): " << execution_time << endl
-       << "Coherence (%): " << 100.0*exp(-execution_time / params.t1) << endl;
+       << "Coherence (%): " << 100.0 * computeCoherence(execution_time, params.t1)
+       << endl; 
   
 }
 
 void Statistics::updateStatistics(const Statistics& stats)
 {
   executed_gates += stats.executed_gates;
-  intercore_comms += stats.intercore_comms;
+  total_intercore_comms += stats.total_intercore_comms;
   intercore_volume += stats.intercore_volume;
   computation_time += stats.computation_time;
   
@@ -225,6 +177,7 @@ void Statistics::updateStatistics(const Statistics& stats)
   communication_time.t_clas += stats.communication_time.t_clas;
   communication_time.t_post += stats.communication_time.t_post;
 
+  cout << "fetch_time into update = " << stats.fetch_time << endl;
   fetch_time += stats.fetch_time;
   decode_time += stats.decode_time;
   dispatch_time += stats.dispatch_time;
@@ -242,6 +195,12 @@ void Statistics::updateStatistics(const Statistics& stats)
 
       samples++;
   }
+
+  // Accumulate intercore_comms
+  int ncores = intercore_comms.size();
+  for (int i = 0; i < ncores; ++i)
+    for (int j = 0; j < ncores; ++j)
+      intercore_comms[i][j] += stats.intercore_comms[i][j];
 }
 
 
@@ -282,3 +241,10 @@ void Statistics::getCoresStats(const list<vector<Core> >& history, const Archite
 
   avg_u = sum_avg_u / history.size();
 }
+
+void Statistics::addIntercoreCommunications(const ParallelCommunications& pcomms)
+{
+  for (const auto& comm : pcomms)
+    intercore_comms[comm.src_core][comm.dst_core]++;
+}
+

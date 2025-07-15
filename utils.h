@@ -14,5 +14,7 @@ int getRandomNumber(const vector<float> prob);
 // between 0 and n-1
 set<int> getRandomNoRepetition(const int n, const int set_size);
 
+// compute the coherence
+double computeCoherence(const double etime, const double t1);
 
 #endif

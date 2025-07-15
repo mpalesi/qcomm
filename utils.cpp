@@ -35,3 +35,14 @@ set<int> getRandomNoRepetition(const int n, const int set_size)
 
   return result;
 }
+
+//----------------------------------------------------------------------
+// Coherency is computed based on P. Escofet, et al. 2025. An Accurate
+// and Efficient Analytic Model of Fidelity Under Depolarizing Noise
+// Oriented to Large Scale Quantum System Design. arXiv:2503.06693
+// [quant-ph] https://arxiv.org/abs/2503.06693
+// Times are in seconds
+double computeCoherence(const double etime, const double t1)
+{
+  return exp(-etime / t1);
+}

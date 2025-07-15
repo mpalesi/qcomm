@@ -29,6 +29,11 @@ Cores::Cores(const Architecture& architecture, const Mapping& mapping)
     }
 }
 
+int Cores::getNumCores() const
+{
+  return cores.size();
+}
+
 void Cores::saveHistory()
 {
   history.push_back(cores);

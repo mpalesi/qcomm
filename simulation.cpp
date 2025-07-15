@@ -173,7 +173,7 @@ void Simulation::updateRemoteExecutionStats(Statistics& stats,
 {
   stats.executed_gates += pgates.size();
 
-  stats.intercore_comms += pcomms.size();
+  stats.total_intercore_comms += pcomms.size();
 
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
     
@@ -181,6 +181,8 @@ void Simulation::updateRemoteExecutionStats(Statistics& stats,
   				       
   addCommunicationTime(stats.communication_time, comm_time);
 
+  stats.addIntercoreCommunications(pcomms);
+  
   // We assume that all the gates in the slice are executed
   // concurrently, each contributing with a gate delay, assuming that
   // the gate delay is constant regardless of the gate type.
@@ -203,7 +205,7 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 				       const ParallelGates& rgates,
 				       Mapping& mapping, Cores& cores)
 {
-  Statistics stats;
+  Statistics stats(cores.getNumCores());
 
   if (!rgates.empty())
     {
@@ -281,6 +283,9 @@ Statistics Simulation::mergeLocalRemoteStatistics(const Statistics& stats_local,
   stats.communication_time = stats_remote.communication_time;
   stats.computation_time = (stats_local.computation_time > stats_remote.computation_time) ?
     stats_local.computation_time : stats_remote.computation_time;
+
+  // Incorporate the intercore_comms stats into the overall stats
+  stats.intercore_comms = stats_remote.intercore_comms;
   
   return stats;
 }
@@ -298,7 +303,9 @@ void Simulation::fetchContribution(Statistics& stats,
   for (Gate g : pgates)
     bundle_size += parameters.bits_instruction + g.size() * bits_qubit_addr;
 
+  cout << "bundle_size: " << bundle_size << "\t memory_bandwidth: " << parameters.memory_bandwidth << endl;
   stats.fetch_time = bundle_size / parameters.memory_bandwidth;
+  cout << "fetch_time = " << stats.fetch_time << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -360,7 +367,7 @@ void Simulation::dispatchContribution(Statistics& stats,
     stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
   }
   
-  stats.intercore_comms += pcomms.size();
+  stats.total_intercore_comms += pcomms.size();
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
 }
 
@@ -454,8 +461,9 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 				const NoC& noc, const Parameters& parameters,
 				Mapping& mapping, Cores& cores)
 {
-  Statistics global_stats;
-
+  Statistics global_stats(cores.getNumCores());
+  cout << "global_stats.fetch_time = " << global_stats.fetch_time << endl;
+  
   cores.saveHistory(); // save the initial state of the cores
   
   // make a copy of the circuit that might be modified when not all-to-all connectivity is used for teleportation
