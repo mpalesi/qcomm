@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include "gate.h"
 #include "core.h"
 #include "circuit.h"
 #include "architecture.h"
@@ -24,13 +25,14 @@ struct Statistics
   double dispatch_time;
   vector<vector<int>> intercore_comms; // row is source, col is target
   map<int,int> teleportations_per_qubit;
+  map<int,int> operations_per_qubit;
   
   Statistics();
   Statistics(const int ncores);
   
   void updateStatistics(const Statistics& stats);
   
-  void display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
+  void display(const Cores& cores, const Architecture& arch,
 	       const Parameters& params);
 
   double getExecutionTime() const;
@@ -42,8 +44,7 @@ struct Statistics
 
   void displayIntercoreCommunications();
 
-  void displayOperationsPerQubit(const Circuit& circuit);
-  vector<int> getOperationsPerQubit(const Circuit& circuit);
+  void displayOperationsPerQubit();
 
   void displayTeleportationsPerQubit();
 
@@ -51,6 +52,7 @@ struct Statistics
 
   void addIntercoreCommunications(const ParallelCommunications& pcomms);
   void addTeleportationsPerQubit(const int qb);
+  void addOperationsPerQubit(const ParallelGates& pgates, const int overhead = 0);
 };
 
 #endif

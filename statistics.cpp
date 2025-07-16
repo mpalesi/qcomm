@@ -44,25 +44,11 @@ void Statistics::displayIntercoreCommunications()
     }
 }
 
-vector<int> Statistics::getOperationsPerQubit(const Circuit& circuit)
+void Statistics::displayOperationsPerQubit()
 {
-  vector<int> opsqb(circuit.number_of_qubits, 0);
-
-  for (ParallelGates pg : circuit.circuit)
-    for (Gate g : pg)
-      for (int qb : g)
-	opsqb[qb]++;
-
-  return opsqb;
-}
-
-void Statistics::displayOperationsPerQubit(const Circuit& circuit)
-{
-  vector<int> opsqb = getOperationsPerQubit(circuit);
-
-  for (int ops : opsqb)
-    cout << ops << ", ";
-  cout << endl;
+  for (const auto& pair : operations_per_qubit) 
+    cout << "q(" << pair.first << "):" << pair.second << ", ";  
+  cout << endl;  
 }
 
 // return core idx where qb is located. -1 if not found
@@ -84,7 +70,7 @@ void Statistics::displayTeleportationsPerQubit()
   cout << endl;  
 }
 
-void Statistics::display(const Circuit& circuit, const Cores& cores, const Architecture& arch,
+void Statistics::display(const Cores& cores, const Architecture& arch,
 			 const Parameters& params)
 {
   cout << endl
@@ -107,7 +93,7 @@ void Statistics::display(const Circuit& circuit, const Cores& cores, const Archi
 
   if (params.stats_detailed) {
     cout << "Operations per qubit: ";
-    displayOperationsPerQubit(circuit);
+    displayOperationsPerQubit();
   }
 
   if (params.stats_detailed) {
@@ -168,6 +154,10 @@ void Statistics::updateStatistics(const Statistics& stats)
   // Accumulate teleportations_per_qubit
   for (const auto& pair : stats.teleportations_per_qubit)
     teleportations_per_qubit[pair.first] += pair.second;
+
+  // Accumulated operations_per_qubit
+  for (const auto& pair : stats.operations_per_qubit)
+    operations_per_qubit[pair.first] += pair.second;
 }
 
 
@@ -218,4 +208,11 @@ void Statistics::addIntercoreCommunications(const ParallelCommunications& pcomms
 void Statistics::addTeleportationsPerQubit(const int qb)
 {
   teleportations_per_qubit[qb]++;
+}
+
+void Statistics::addOperationsPerQubit(const ParallelGates& pgates, const int overhead)
+{
+  for (const auto& gate : pgates)
+    for (const auto& qb : gate)
+      operations_per_qubit[qb] += 1 + overhead;
 }

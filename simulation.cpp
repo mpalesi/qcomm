@@ -50,6 +50,8 @@ Statistics Simulation::localExecution(const ParallelGates& lgates,
       // TODO: add swap contribution like in the remote execution
       stats.executed_gates = lgates.size();
     }
+
+  stats.addOperationsPerQubit(lgates);
   
   return stats;
 }
@@ -65,7 +67,8 @@ int Simulation::selectDestinationCore(const Architecture& architecture,
 {
   int selected_core;
   
-  if (architecture.teleportation_type == TP_TYPE_MESH || architecture.dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
+  if (architecture.teleportation_type == TP_TYPE_MESH ||
+      architecture.dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
     {
       assert(gate.size() == 2);
       auto it = gate.begin(); 
@@ -207,6 +210,10 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 {
   Statistics stats(architecture.number_of_cores);
 
+  // I assume that for remote gates, there is an additional operation
+  // per involved qubit. Therefore, I’m specifying an overhead of 1
+  stats.addOperationsPerQubit(rgates, 1);
+
   if (!rgates.empty())
     {
       ParallelGates gates = rgates;
@@ -294,6 +301,11 @@ Statistics Simulation::mergeLocalRemoteStatistics(const Statistics& stats_local,
   // Incorporate the teleportations_per_qubit stats (only available in
   // stats_remote) into the overall stats
   stats.teleportations_per_qubit = stats_remote.teleportations_per_qubit;
+
+  // Incorporate operations_per_qubit stats.
+  stats.operations_per_qubit = stats_local.operations_per_qubit;
+  for (const auto& pair : stats_remote.operations_per_qubit)
+    stats.operations_per_qubit[pair.first] += pair.second;
   
   return stats;
 }
