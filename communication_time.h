@@ -1,6 +1,9 @@
 #ifndef __COMMUNICATION_TIME_H__
 #define __COMMUNICATION_TIME_H__
 
+#include <string>
+using namespace std;
+
 struct CommunicationTime
 {
   double t_epr; // EPR pair generation time
@@ -11,7 +14,7 @@ struct CommunicationTime
 
   CommunicationTime() : t_epr(0.0), t_dist(0.0), t_pre(0.0), t_clas(0.0), t_post(0.0) {}
 
-  void display() const;
+  void display(const string& prefix = "") const;
 
   double getTotalTime() const;
 };

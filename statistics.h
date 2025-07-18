@@ -11,6 +11,7 @@
 #include "communication_time.h"
 #include "communication.h"
 
+
 struct Statistics
 {
   int executed_gates;

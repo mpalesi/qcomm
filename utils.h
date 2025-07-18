@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 
+#define IND "  " // Indentation string used in YAML generated files
+
 using namespace std;
 
 // returns a random integer between 0 and prob.size()-1 with prob(i) =

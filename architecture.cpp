@@ -1,46 +1,48 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "utils.h"
 #include "architecture.h"
 #include "mapping.h"
 
 void Architecture::display() const
 {
   cout << endl
-       << "*** Architecture ***" << endl
-       << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
-       << "qubits_per_core: " << qubits_per_core
-       << " (total physical qubits: " << mesh_x * mesh_y * qubits_per_core << ")" << endl
-       << "ltm_ports: " << ltm_ports << endl;
+       << "Architecture:" << endl
+       << IND << "number_of_cores: " << number_of_cores << endl
+       << IND << "mesh_size: '" << mesh_x << "x" << mesh_y << "'" << endl
+       << IND << "qubits_per_core: " << qubits_per_core << endl
+       << IND << "total_physical_qubits: " << mesh_x * mesh_y * qubits_per_core << endl
+       << IND << "ltm_ports: " << ltm_ports << endl;
 
-  cout << "teleportation_type: " << teleportation_type;
+  cout << IND << "teleportation_type: " << teleportation_type;
   if (teleportation_type == TP_TYPE_A2A)
-    cout << " (all to all)" << endl;
+    cout << " # all to all" << endl;
   else if (teleportation_type == TP_TYPE_MESH)
-    cout << " (mesh)" << endl;
+    cout << " # mesh" << endl;
   else 
-    cout << " (??\?)" << endl;
+    cout << " # ??\?" << endl;
 
-  cout << "dst_selection_mode: " << dst_selection_mode;
+  cout << IND << "dst_selection_mode: " << dst_selection_mode;
   if (dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
-    cout << " (load independent)" << endl;
+    cout << " # load independent" << endl;
   else if (dst_selection_mode == DST_SEL_LOAD_AWARE)
-    cout << " (load aware)" << endl;
+    cout << " # load aware" << endl;
   else
-    cout << " (??\?)" << endl;
+    cout << " # ??\?" << endl;
   
 
-  cout << "wireless_enabled: " << wireless_enabled << endl;
+  cout << IND << "wireless_enabled: " << wireless_enabled << endl;
   if (wireless_enabled)
-    cout << "\tradio_channels: " << radio_channels << endl;
+    cout << "radio_channels: " << radio_channels << endl;
 
-  cout << "mapping_type: " << mapping_type;
+  cout << IND << "mapping_type: " << mapping_type;
   if (mapping_type == MAP_RANDOM)
-    cout << " (random)" << endl;
+    cout << " # random" << endl;
   else if (mapping_type == MAP_SEQUENTIAL)
-    cout << " (sequential)" << endl;
+    cout << " # sequential" << endl;
   else
-    cout << " (??\?)" << endl;
+    cout << " # ??\?" << endl;
 }
 
 bool Architecture::readFromFile(const string& file_name)

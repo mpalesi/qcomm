@@ -4,28 +4,27 @@
 #include <set>
 #include <cassert>
 #include <map>
-#include "circuit.h"
 #include "utils.h"
+#include "circuit.h"
 
 using namespace std;
 
 void Circuit::display(const bool verbose)
 {
   cout << endl
-       << "*** Circuit ***" << endl
-       << "Number of qubits: " << number_of_qubits << endl
-       << "Number of gates: " << number_of_gates << endl
-       << "Number of stages: " << number_of_stages << endl;
+       << "Circuit:" << endl
+       << IND << "number_of_qubits: " << number_of_qubits << endl
+       << IND << "number_of_gates: " << number_of_gates << endl
+       << IND << "number_of_stages: " << number_of_stages << endl;
 
   // Compute gate distribution
   map<int,int> inputhist;
   for (const auto& pg : circuit)
     for (const auto& g : pg)
       inputhist[g.size()]++;
-  cout << "Distribution of gates: ";
+  cout << IND << "distribution_of_gates:" << endl;
   for (const auto& hp : inputhist)
-    cout << hp.first << "-input: " << hp.second*100.0/number_of_gates << "%, ";
-  cout << endl;
+    cout << IND << IND << "'" << hp.first << "-input': " << hp.second*100.0/number_of_gates << " # %" << endl;
   
   if (verbose)
     for (const auto& parallel_gates : circuit)

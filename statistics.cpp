@@ -2,6 +2,8 @@
 #include <limits>
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <sstream>
 #include "utils.h"
 #include "statistics.h"
 
@@ -34,23 +36,6 @@ double Statistics::getExecutionTime() const
 }
 
 
-void Statistics::displayIntercoreCommunications()
-{
-  for (int s=0; s<(int)intercore_comms.size(); s++)
-    {
-      for (int d=0; d<(int)intercore_comms[s].size(); d++)
-	cout << intercore_comms[s][d] << " ";
-      cout << endl;
-    }
-}
-
-void Statistics::displayOperationsPerQubit()
-{
-  for (const auto& pair : operations_per_qubit) 
-    cout << "q(" << pair.first << "):" << pair.second << ", ";  
-  cout << endl;  
-}
-
 // return core idx where qb is located. -1 if not found
 int Statistics::qbitToCore(const int qb, const vector<Core> cores)
 {
@@ -63,55 +48,92 @@ int Statistics::qbitToCore(const int qb, const vector<Core> cores)
   return -1;
 }
 
+void Statistics::displayIntercoreCommunications()
+{
+  for (int s=0; s<(int)intercore_comms.size(); s++)
+    {
+      cout << IND << IND << "- [";
+      for (int d=0; d<(int)intercore_comms[s].size(); d++)
+	{
+	  cout << intercore_comms[s][d];
+	  if (d != (int)intercore_comms[s].size()-1)
+	    cout << ", ";
+	  else
+	    cout << "]";
+	}
+      cout << endl;
+    }
+}
+
+void Statistics::displayOperationsPerQubit()
+{
+  cout << "{";
+
+  auto it = operations_per_qubit.begin();
+  auto last = prev(operations_per_qubit.end());
+  for (; it != operations_per_qubit.end(); ++it) {
+    cout << "q" << it->first << ": " << it->second;
+    if (it != last)
+      cout << ", ";
+    }  
+  cout << "}" << endl;
+}
+
 void Statistics::displayTeleportationsPerQubit()
 {
-  for (const auto& pair : teleportations_per_qubit) 
-    cout << "q(" << pair.first << "):" << pair.second << ", ";  
-  cout << endl;  
+  cout << "{";
+
+  auto it = teleportations_per_qubit.begin();
+  auto last = prev(teleportations_per_qubit.end());
+  for (; it != teleportations_per_qubit.end(); ++it) {
+    cout << "q" << it->first << ": " << it->second;
+    if (it != last)
+      cout << ", ";
+    }  
+  cout << "}" << endl;
 }
 
 void Statistics::display(const Cores& cores, const Architecture& arch,
 			 const Parameters& params)
 {
   cout << endl
-       << "*** Statistics ***" << endl
-       << "Executed gates: " << executed_gates << endl
-       << "Intercore communications: " << total_intercore_comms << endl
-       << "Intercore traffic volume (bits): " << intercore_volume << endl
-       << "Throughput (Mbps): " << avg_throughput/1.0e6 << " avg, " << max_throughput/1.0e6 << " peak"
-       << endl;
+       << "Statistics:" << endl
+       << IND << "executed_gates: " << executed_gates << endl
+       << IND << "total_intercore_communications: " << total_intercore_comms << endl
+       << IND << "intercore_traffic_volume: " << intercore_volume << " # bits" << endl
+       << IND << "throughput:" << endl
+       << IND << IND << "avg: " << avg_throughput/1.0e6 << " # Mbps" << endl
+       << IND << IND << "peak: " << max_throughput/1.0e6 << " # Mbps" << endl;
 
-  
   double avg, min, max;
   getCoresStats(cores.history, arch, avg, min, max);
-  cout << "Core utilization: " << avg << " avg, " << min << " min, " << max << " max" << endl;
+  cout << IND << "core_utilization:" << endl
+       << IND << IND << "avg: " << avg << endl
+       << IND << IND << "tmin: " << min << endl
+       << IND << IND << "tmax: " << max << endl;
 
-  if (params.stats_detailed) {
-    cout << "Intercore communications (row is source, col is target):" << endl;
-    displayIntercoreCommunications();
-  }
 
-  if (params.stats_detailed) {
-    cout << "Operations per qubit: ";
-    displayOperationsPerQubit();
-  }
+  if (params.stats_detailed)
+    {
+      cout << IND << "intercore_communications: # row is source, col is target" << endl;
+      displayIntercoreCommunications();
+      
+      cout << IND << "operations_per_qubit: ";
+      displayOperationsPerQubit();
 
-  if (params.stats_detailed) {
-    cout << "Teleportations per qubit: ";
-    displayTeleportationsPerQubit();
-  }
-
+      cout << IND << "teleportations_per_qubit: ";
+      displayTeleportationsPerQubit();
+    }
   
-  communication_time.display();
+  communication_time.display(IND);
+  
   double execution_time = getExecutionTime();
-  cout << "Computation time (s): " << computation_time << endl
-       << "Fetch time (s): " << fetch_time << endl
-       << "Decode time (s): " << decode_time << endl
-       << "Dispatch time (s): " << dispatch_time << endl
-       << "Execution time (s): " << execution_time << endl
-       << "Coherence (%): " << 100.0 * computeCoherence(execution_time, params.t1)
-       << endl; 
-  
+  cout << IND << "computation_time: " << computation_time << " # sec" << endl
+       << IND << "fetch_time: " << fetch_time << " # sec" << endl
+       << IND << "decode_time: " << decode_time << " # sec" << endl
+       << IND << "dispatch_time: " << dispatch_time << " # sec" << endl
+       << IND << "execution_time: " << execution_time << " # sec" << endl
+       << IND << "coherence: " << 100.0 * computeCoherence(execution_time, params.t1) << " # %" << endl;
 }
 
 void Statistics::updateStatistics(const Statistics& stats)

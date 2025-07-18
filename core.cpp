@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include "utils.h"
 #include "core.h"
 
 Cores::Cores(const Architecture& architecture, const Mapping& mapping)
@@ -42,15 +43,26 @@ void Cores::saveHistory()
 void Cores::display()
 {
   cout << endl
-       << "*** Cores ***" << endl;
+       << "Cores:" << endl;
+
+  cout << IND << "number_of_cores: " << cores.size() << endl;
+  
+  cout << IND << "qubits_per_core:" << endl;
   int ncores = cores.size();  
   for (int core_id=0; core_id<ncores; core_id++)
     {
-      cout << "core " << core_id << ": ";
-      
-      for (const auto& qubit : cores[core_id])
-	cout << qubit << " ";
-      cout << endl;
+      cout << IND << IND << "'core " << core_id << "': ";
+      cout << "[";
+
+      set<int> qbs = cores[core_id];
+      auto it = qbs.begin();
+      auto last = prev(qbs.end());
+      for (; it != qbs.end(); ++it) {      
+	cout << *it;
+	if (it != last)
+	  cout << ", ";
+      }
+      cout << "]" << endl;
     }
 }
 

@@ -1,23 +1,25 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "utils.h"
 #include "parameters.h"
 
 void Parameters::display() const
 {
   cout << endl
-       << "*** Parameters ***" << endl
-       << "gate delay (s): " << gate_delay << endl
-       << "epr delay (s): " << epr_delay << endl
-       << "dist delay (s): " << dist_delay << endl
-       << "pre delay (s): " << pre_delay << endl
-       << "post delay (s): " << post_delay << endl
-       << "noc clock time (s): " << noc_clock_time << endl
-       << "wbit rate (bps): " << wbit_rate << endl
-       << "token pass time (s): " << token_pass_time << endl
-       << "memory mandwidth (bps): " << memory_bandwidth << endl
-       << "bits instruction (bits): " << bits_instruction << endl
-       << "decode time per instruction (s): " << decode_time_per_instruction << endl;
+       << "Parameters:" << endl
+       << IND << "gate_delay: " << gate_delay << " # sec" << endl
+       << IND << "epr_delay: " << epr_delay << " # sec" << endl
+       << IND << "dist_delay: " << dist_delay << " # sec" << endl
+       << IND << "pre_delay: " << pre_delay << " # sec" << endl
+       << IND << "post_delay: " << post_delay << " # sec" << endl
+       << IND << "noc_clock_time: " << noc_clock_time << " # sec" << endl
+       << IND << "wbit_rate: " << wbit_rate << " # bps" << endl
+       << IND << "token_pass_time: " << token_pass_time << " # sec" << endl
+       << IND << "memory_mandwidth: " << memory_bandwidth << " # bps" << endl
+       << IND << "bits_instruction: " << bits_instruction << " # bits" << endl
+       << IND << "decode_time_per_instruction: " << decode_time_per_instruction << " # sec" << endl
+       << IND << "t1: " << t1 << " # sec" << endl;
 }
 
 bool Parameters::readFromFile(const string& file_name)

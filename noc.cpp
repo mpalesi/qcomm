@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include "utils.h"
 #include "noc.h"
 
 NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _clock_time, int _qubit_addr_bits)
@@ -37,17 +38,17 @@ void NoC::display()
   if (!winoc)
     {
       cout << endl
-	   << "*** NoC ***" << endl
-	   << "mesh_x x mesh_y: " << mesh_x << "x" << mesh_y << endl
-	   << "clock period (s): " << clock_time << endl
-	   << "link width (bits): " << link_width << endl;
+	   << "NoC:" << endl
+	   << IND << "mesh_size: '" << mesh_x << "x" << mesh_y << "'" << endl
+	   << IND << "clock_period: " << clock_time << " # sec" << endl
+	   << IND << "link_width: " << link_width << " # bits" << endl;
     }
   else
     {
-      cout << "*** WiNoC ***" << endl
-	   << "bit rate (bps): " << wbit_rate << endl
-	   << "radio channels: " << radio_channels << endl
-	   << "token pass time (s): " << token_pass_time << endl;
+      cout << "WiNoC:" << endl
+	   << IND << "bit_rate: " << wbit_rate << " # bps" << endl
+	   << IND << "radio_channels: " << radio_channels << endl
+	   << IND << "token_pass_time: " << token_pass_time << " # sec" << endl;
     }
 }
 
