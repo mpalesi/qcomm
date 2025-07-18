@@ -34,22 +34,22 @@ int main(int argc, char* argv[])
   Circuit circuit;
   if (!circuit.readFromFile(circuit_fn))
     {
-      cerr << "error reading circuit file" << endl;
-      return -2;
+      cerr << "Error reading circuit file " << circuit_fn << endl;
+      return ERR_CIRC_FILE;
     }
   
   Architecture architecture;
   if (!architecture.readFromFile(architecture_fn))
     {
-      cerr << "error reading architecture file" << endl;
-      return -3;
+      cerr << "Error reading architecture file " << architecture_fn << endl;
+      return ERR_ARCH_FILE;
     }
   
   Parameters parameters;
   if (!parameters.readFromFile(parameters_fn))
     {
-      cerr << "error reading parameters file" << endl;
-      return -4;
+      cerr << "Error reading parameters file " << parameters_fn << endl;
+      return ERR_PARM_FILE;
     }
 
   overrideParameters(params_override, architecture, parameters);

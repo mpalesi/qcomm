@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <yaml-cpp/yaml.h>
 #include "utils.h"
 #include "architecture.h"
 #include "mapping.h"
@@ -32,7 +33,7 @@ void Architecture::display() const
     cout << " # ??\?" << endl;
   
 
-  cout << IND << "wireless_enabled: " << wireless_enabled << endl;
+  cout << IND << "wireless_enabled: " << boolalpha << wireless_enabled << endl;
   if (wireless_enabled)
     cout << "radio_channels: " << radio_channels << endl;
 
@@ -45,54 +46,42 @@ void Architecture::display() const
     cout << " # ??\?" << endl;
 }
 
+template <typename T>
+bool getOrFail(const YAML::Node& node, const string& key, const string& file_name, T& val)
+{
+  try {
+    val = node[key].as<T>();
+    return true;
+  } catch (const YAML::BadConversion& e) {
+    cerr << "Error: '" << key << "' not defined or has wrong type in " << file_name << endl;
+    return false;
+  } catch (const YAML::InvalidNode& e) {
+    cerr << "Error: '" << key << "' missing in " << file_name << endl;
+    return false;
+   }
+}
+
 bool Architecture::readFromFile(const string& file_name)
 {
-
-  ifstream input_file(file_name);
-  if (!input_file.is_open())
-    return false;
-
-  string line;
-  while (getline(input_file, line))
-    {
-      istringstream iss(line);
-      string attribute;
-      
-      iss >> attribute;
-      if (attribute == string("mesh_x"))
-	iss >> mesh_x;
-      else if (attribute == string("mesh_y"))
-	iss >> mesh_y;
-      else if (attribute == string("link_width"))
-	iss >> link_width;
-      else if (attribute == string("qubits_per_core"))
-	iss >> qubits_per_core;
-      else if (attribute == string("ltm_ports"))
-	iss >> ltm_ports;
-      else if (attribute == string("radio_channels"))
-	iss >> radio_channels;
-      else if (attribute == string("wireless_enabled"))
-	iss >> wireless_enabled;
-      else if (attribute == string("teleportation_type"))
-	iss >> teleportation_type;
-      else if (attribute == string("dst_selection_mode"))
-	iss >> dst_selection_mode;
-      else if (attribute == string("mapping_type"))
-	iss >> mapping_type;
-      else {
-	cout << "Invalid attribute reading " << file_name
-	     << ": '" << attribute << "'" << endl;
-	return false;
-      }
-    }
-
-  input_file.close();
-
+  YAML::Node config = YAML::LoadFile(file_name);
+  bool result = true;
+  
+  result &= getOrFail<int>(config, "mesh_x", file_name, mesh_x);
+  result &= getOrFail<int>(config, "mesh_y", file_name, mesh_y);
+  result &= getOrFail<int>(config, "link_width", file_name, link_width);
+  result &= getOrFail<int>(config, "qubits_per_core", file_name, qubits_per_core);
+  result &= getOrFail<int>(config, "ltm_ports", file_name, ltm_ports);
+  result &= getOrFail<int>(config, "radio_channels", file_name, radio_channels);
+  result &= getOrFail<bool>(config, "wireless_enabled", file_name, wireless_enabled);
+  result &= getOrFail<int>(config, "teleportation_type", file_name, teleportation_type);
+  result &= getOrFail<int>(config, "dst_selection_mode", file_name, dst_selection_mode);
+  result &= getOrFail<int>(config, "mapping_type", file_name, mapping_type);
+  
   updateDerivedVariables();
   
   configured = true;
-
-  return true;
+  
+  return result;
 }
 
 void Architecture::updateMeshX(const int nv)

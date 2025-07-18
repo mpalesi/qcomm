@@ -1,6 +1,12 @@
 CXX := g++
 CXXFLAGS := -std=c++11 -Wall -Wextra
 
+# Change the following path to the location where the yaml-cpp library
+# is installed. On macOS, you can find this path by typing:
+# brew --prefix yaml-cpp
+# in the terminal.
+YAML_CPP_PREFIX := /opt/homebrew/opt/yaml-cpp
+
 TARGET := qcomm
 RCG_TARGET := rcg
 
@@ -18,14 +24,14 @@ RCG_DEPS := $(RCG_OBJS:.o=.d)
 all: $(TARGET) $(RCG_TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ -L$(YAML_CPP_PREFIX)/lib -lyaml-cpp
 
 $(RCG_TARGET): $(RCG_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I$(YAML_CPP_PREFIX)/include -MMD -MP -c $< -o $@
 
 -include $(DEPS)
 -include $(RCG_DEPS)
