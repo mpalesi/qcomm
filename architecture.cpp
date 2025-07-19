@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <yaml-cpp/yaml.h>
+// #include <yaml-cpp/yaml.h>
 #include "utils.h"
 #include "architecture.h"
 #include "mapping.h"
@@ -46,6 +46,7 @@ void Architecture::display() const
     cout << " # ??\?" << endl;
 }
 
+/*
 template <typename T>
 bool getOrFail(const YAML::Node& node, const string& key, const string& file_name, T& val)
 {
@@ -60,6 +61,7 @@ bool getOrFail(const YAML::Node& node, const string& key, const string& file_nam
     return false;
    }
 }
+*/
 
 bool Architecture::readFromFile(const string& file_name)
 {
