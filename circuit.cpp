@@ -31,7 +31,6 @@ void Circuit::display(const bool verbose)
       displayGates(parallel_gates, true);
 }
 
-
 bool Circuit::readFromFile(const string& file_name)
 {
   circuit.clear();

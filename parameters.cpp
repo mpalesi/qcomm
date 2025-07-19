@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <yaml-cpp/yaml.h>
 #include "utils.h"
 #include "parameters.h"
 
@@ -24,53 +25,24 @@ void Parameters::display() const
 
 bool Parameters::readFromFile(const string& file_name)
 {
-  ifstream input_file(file_name);
-  if (!input_file.is_open())
-    return(false);
+  YAML::Node config;
+  bool result = loadYAMLFile(file_name, config);
 
-  string line;
-  while (getline(input_file, line))
-    {
-      istringstream iss(line);
-      string param;
-      
-      iss >> param;
-      if (param == string("gate_delay"))
-	iss >> gate_delay;
-      else if (param == string("epr_delay"))
-	iss >> epr_delay;
-      else if (param == string("dist_delay"))
-	iss >> dist_delay;
-      else if (param == string("pre_delay"))
-	iss >> pre_delay;
-      else if (param == string("post_delay"))
-	iss >> post_delay;
-      else if (param == string("noc_clock_time"))
-	iss >> noc_clock_time;
-      else if (param == string("wbit_rate"))
-	iss >> wbit_rate;
-      else if (param == string("token_pass_time"))
-	iss >> token_pass_time;
-      else if (param == string("memory_bandwidth"))
-	iss >> memory_bandwidth;
-      else if (param == string("bits_instruction"))
-	iss >> bits_instruction;
-      else if (param == string("decode_time_per_instruction"))
-	iss >> decode_time_per_instruction;
-      else if (param == string("t1"))
-	iss >> t1;
-      else if (param == string("stats_detailed"))
-	iss >> stats_detailed;
-      else {
-	cout << "Invalid patameter reading " << file_name
-	     << ": '" << param << "'" << endl;
-	return(false);
-      }
-    }
-
-  input_file.close();
+  result &= getOrFail<double>(config, "gate_delay", file_name, gate_delay);
+  result &= getOrFail<double>(config, "epr_delay", file_name, epr_delay);
+  result &= getOrFail<double>(config, "dist_delay", file_name, dist_delay);
+  result &= getOrFail<double>(config, "pre_delay", file_name, pre_delay);
+  result &= getOrFail<double>(config, "post_delay", file_name, post_delay);
+  result &= getOrFail<double>(config, "noc_clock_time", file_name, noc_clock_time);
+  result &= getOrFail<double>(config, "wbit_rate", file_name, wbit_rate);
+  result &= getOrFail<double>(config, "token_pass_time", file_name, token_pass_time);
+  result &= getOrFail<double>(config, "memory_bandwidth", file_name, memory_bandwidth);
+  result &= getOrFail<int>(config, "bits_instruction", file_name, bits_instruction);
+  result &= getOrFail<double>(config, "decode_time_per_instruction", file_name, decode_time_per_instruction);
+  result &= getOrFail<double>(config, "t1", file_name, t1);
+  result &= getOrFail<bool>(config, "stats_detailed", file_name, stats_detailed);
   
-  return true;
+  return result;
 }
 
 void Parameters::updateGateDelay(const double nv)

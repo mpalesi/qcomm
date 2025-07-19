@@ -14,6 +14,13 @@
 
 using namespace std;
 
+// Loads a YAML file. Returns true if successful, false otherwise, and
+// prints a specific error message to stderr
+bool loadYAMLFile(const string& file_name, YAML::Node& config);
+
+// reads the value associated to a key of a yaml node and print a
+// message on stderr in case of error. This function is used by
+// readFromFile method of Architecture and Parameters
 template <typename T>
 bool getOrFail(const YAML::Node& node, const string& key, const string& file_name, T& val)
 {
@@ -37,7 +44,11 @@ int getRandomNumber(const vector<float> prob);
 // between 0 and n-1
 set<int> getRandomNoRepetition(const int n, const int set_size);
 
-// compute the coherence
+// Coherency is computed based on P. Escofet, et al. 2025. An Accurate
+// and Efficient Analytic Model of Fidelity Under Depolarizing Noise
+// Oriented to Large Scale Quantum System Design. arXiv:2503.06693
+// [quant-ph] https://arxiv.org/abs/2503.06693
+// Times are in seconds
 double computeCoherence(const double etime, const double t1);
 
 #endif

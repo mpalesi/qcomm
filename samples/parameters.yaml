@@ -1,0 +1,14 @@
+gate_delay: 15e-9 # sec
+epr_delay: 1e-6  # sec
+dist_delay: 0.01e-9  # sec
+pre_delay: 390e-9  # sec
+post_delay: 30e-9  # sec
+wbit_rate: 12e9  # bps
+token_pass_time: 1e-9  # sec
+memory_bandwidth: 128e9  # bps
+bits_instruction: 4 # number of bits used for encoding an instruction
+decode_time_per_instruction: 10e-9 # sec
+noc_clock_time: 10e-9 # sec
+t1: 268e-6 # sec
+stats_detailed: true
+

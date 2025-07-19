@@ -27,7 +27,7 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ -L$(YAML_CPP_PREFIX)/lib -lyaml-cpp
 
 $(RCG_TARGET): $(RCG_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ -L$(YAML_CPP_PREFIX)/lib -lyaml-cpp
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)

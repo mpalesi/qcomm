@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-// #include <yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h>
 #include "utils.h"
 #include "architecture.h"
 #include "mapping.h"
@@ -46,27 +46,10 @@ void Architecture::display() const
     cout << " # ??\?" << endl;
 }
 
-/*
-template <typename T>
-bool getOrFail(const YAML::Node& node, const string& key, const string& file_name, T& val)
-{
-  try {
-    val = node[key].as<T>();
-    return true;
-  } catch (const YAML::BadConversion& e) {
-    cerr << "Error: '" << key << "' not defined or has wrong type in " << file_name << endl;
-    return false;
-  } catch (const YAML::InvalidNode& e) {
-    cerr << "Error: '" << key << "' missing in " << file_name << endl;
-    return false;
-   }
-}
-*/
-
 bool Architecture::readFromFile(const string& file_name)
 {
-  YAML::Node config = YAML::LoadFile(file_name);
-  bool result = true;
+  YAML::Node config;
+  bool result = loadYAMLFile(file_name, config);
   
   result &= getOrFail<int>(config, "mesh_x", file_name, mesh_x);
   result &= getOrFail<int>(config, "mesh_y", file_name, mesh_y);
@@ -80,8 +63,6 @@ bool Architecture::readFromFile(const string& file_name)
   result &= getOrFail<int>(config, "mapping_type", file_name, mapping_type);
   
   updateDerivedVariables();
-  
-  configured = true;
   
   return result;
 }

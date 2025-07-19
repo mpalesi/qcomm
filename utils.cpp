@@ -1,10 +1,22 @@
 #include <random>
 #include "utils.h"
 
+//----------------------------------------------------------------------
+bool loadYAMLFile(const string& file_name, YAML::Node& config)
+{
+  try {
+    config = YAML::LoadFile(file_name);
+    return true;
+  } catch (const YAML::BadFile& e) {
+    std::cerr << "Error: cannot open file '" << file_name << "'" << std::endl;
+    return false;
+  } catch (const YAML::ParserException& e) {
+    std::cerr << "Error: invalid YAML syntax in '" << file_name << "': " << e.what() << std::endl;
+    return false;
+  }
+}
 
 //----------------------------------------------------------------------
-// returns a random integer between 0 and prob.size()-1 with prob(i) =
-// prob[i]
 int getRandomNumber(const vector<float> prob)
 {
   random_device rd;
@@ -16,8 +28,6 @@ int getRandomNumber(const vector<float> prob)
 }
 
 //----------------------------------------------------------------------
-// returns a set of size set_size of random integer without repetition
-// between 0 and n-1
 set<int> getRandomNoRepetition(const int n, const int set_size)
 {
   vector<int> numbers;
@@ -38,11 +48,6 @@ set<int> getRandomNoRepetition(const int n, const int set_size)
 }
 
 //----------------------------------------------------------------------
-// Coherency is computed based on P. Escofet, et al. 2025. An Accurate
-// and Efficient Analytic Model of Fidelity Under Depolarizing Noise
-// Oriented to Large Scale Quantum System Design. arXiv:2503.06693
-// [quant-ph] https://arxiv.org/abs/2503.06693
-// Times are in seconds
 double computeCoherence(const double etime, const double t1)
 {
   return exp(-etime / t1);

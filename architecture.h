@@ -24,9 +24,8 @@ struct Architecture
   int    teleportation_type;
   int    dst_selection_mode;
   int    mapping_type;
-  bool   configured;
   
-  Architecture() : configured(false) {}
+  Architecture() {}
 
   void display() const;
 
