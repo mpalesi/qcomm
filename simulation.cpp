@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include "utils.h"
 #include "simulation.h"
 #include "gate.h"
 #include "communication.h"
@@ -11,11 +12,11 @@ using namespace std;
 // ----------------------------------------------------------------------
 bool Simulation::isLocalGate(const Gate& gate, const Mapping& mapping)
 {
-  assert(!gate.empty());
+  assert(!gate.second.empty());
   
-  int core_id = mapping.qubit2CoreSafe(gate.front()); // core where the first qubit of the gate is mapped to
+  int core_id = mapping.qubit2CoreSafe(gate.second.front()); // core where the first qubit of the gate is mapped to
 
-  for (const auto& qb : gate)
+  for (const auto& qb : gate.second)
     if (mapping.qubit2CoreSafe(qb) != core_id)
       return false;
 
@@ -39,6 +40,32 @@ void Simulation::splitLocalRemoteGates(const ParallelGates& pgates, const Mappin
 }
 
 // ----------------------------------------------------------------------
+double Simulation::getMaxGateLatency(const ParallelGates& lgates,
+				     const map<string,double>& gate_delays)
+{
+  double max_delay = -1;
+
+  for (const auto& g : lgates)
+    {
+      string gname = g.first;
+      auto it = gate_delays.find(gname);
+      if (it != gate_delays.end())
+	{	  
+	  double gdelay = it->second;
+	  if (gdelay > max_delay)
+	    max_delay = gdelay;
+	}
+      else
+	{
+	  cerr << "Error: delay not defined for gate " << gname << endl;
+	  exit(ERR_UNDEF_GATE_DELAY);
+	}
+    }
+  
+  return max_delay;
+}
+
+// ----------------------------------------------------------------------
 Statistics Simulation::localExecution(const ParallelGates& lgates,
 				      const Parameters& params)
 {
@@ -46,7 +73,9 @@ Statistics Simulation::localExecution(const ParallelGates& lgates,
 
   if (!lgates.empty())
     {
-      stats.computation_time = params.gate_delay;
+      // lgates are executed in parallel; the latency is determined by
+      // the slowest gate
+      stats.computation_time = getMaxGateLatency(lgates, params.gate_delays);
       // TODO: add swap contribution like in the remote execution
       stats.executed_gates = lgates.size();
     }
@@ -70,8 +99,8 @@ int Simulation::selectDestinationCore(const Architecture& architecture,
   if (architecture.teleportation_type == TP_TYPE_MESH ||
       architecture.dst_selection_mode == DST_SEL_LOAD_INDEPENDENT)
     {
-      assert(gate.size() == 2);
-      auto it = gate.begin(); 
+      assert(gate.second.size() == 2);
+      auto it = gate.second.begin(); 
       advance(it, 1);    
       selected_core = mapping.qubit2CoreSafe(*it);
     }
@@ -79,7 +108,7 @@ int Simulation::selectDestinationCore(const Architecture& architecture,
     {
       int min_qb = numeric_limits<int>::max();
       selected_core = -1;
-      for (const auto& qb : gate)
+      for (const auto& qb : gate.second)
 	{
 	  int core_id = mapping.qubit2CoreSafe(qb);
 	  
@@ -103,7 +132,7 @@ void Simulation::updateMappingAndCores(const Architecture& architecture,
 				       Mapping& mapping, Cores& cores,
 				       const Gate& gate, const int dst_core)
 {
-  for (const auto& qb : gate)
+  for (const auto& qb : gate.second)
     {
       int src_core = mapping.qubit2core[qb];
 
@@ -129,7 +158,7 @@ void Simulation::addParallelCommunications(ParallelCommunications& parallel_comm
 					   const Mapping& mapping,
 					   const int volume)
 {
-  for (const auto& qb : gate)
+  for (const auto& qb : gate.second)
     {
       int src_core = mapping.qubit2CoreSafe(qb);
       if (src_core != dst_core)
@@ -186,10 +215,7 @@ void Simulation::updateRemoteExecutionStats(Statistics& stats,
 
   stats.addIntercoreCommunications(pcomms);
   
-  // We assume that all the gates in the slice are executed
-  // concurrently, each contributing with a gate delay, assuming that
-  // the gate delay is constant regardless of the gate type.
-  stats.computation_time += params.gate_delay;
+  stats.computation_time += getMaxGateLatency(pgates, params.gate_delays);
 }
 
 // ----------------------------------------------------------------------
@@ -230,7 +256,7 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 	      bool skip_this_gate = false;
 	      int dst_core = selectDestinationCore(architecture, gate, mapping, cores);
 	      vector<int> tmp_available_ltm_ports = available_ltm_ports;
-	      for (const auto& qb : gate)
+	      for (const auto& qb : gate.second)
 		{		  
 		  int src_core = mapping.qubit2core[qb];
 		  if (src_core != dst_core)
@@ -252,7 +278,7 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 			  break;
 			}
 		    }
-		} // for (const auto& qb : gate)
+		} // for (const auto& qb : gate.second)
 
 	      if (!skip_this_gate)
 		{
@@ -321,7 +347,7 @@ void Simulation::fetchContribution(Statistics& stats,
   int bits_qubit_addr = ceil(log2(total_qubits));
   
   for (Gate g : pgates)
-    bundle_size += parameters.bits_instruction + g.size() * bits_qubit_addr;
+    bundle_size += parameters.bits_instruction + g.second.size() * bits_qubit_addr;
 
   stats.fetch_time = bundle_size / parameters.memory_bandwidth;
 }
@@ -346,15 +372,15 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
   
   for (Gate g : pgates)
     {
-      int volume = parameters.bits_instruction + g.size() * bits_qubit_laddr;
+      int volume = parameters.bits_instruction + g.second.size() * bits_qubit_laddr;
       // all the qubits of gate in lgates are in the same core. Thus,
       // to determine the target core. The target core cannot be
       // inferred from the gate in general. For the case of
       // teleportation_type == MESH the target core is that hosting
       // the qubit in the secon input of the gate.
       
-      assert(g.size() <= 2);
-      auto it = g.begin(); 
+      assert(g.second.size() <= 2);
+      auto it = g.second.begin(); 
       advance(it, 1);    
       int qb = *it;      
       int dst_core = mapping.qubit2CoreSafe(qb);
@@ -433,7 +459,7 @@ void Simulation::freeAncillas(const set<int>& ancilla, Mapping& mapping, Cores& 
 void Simulation::removeUsedAncillas(set<int>& ancillas, const ParallelGates& pg)
 {
   for (const auto& gate : pg) {
-    for (int qb : gate) {
+    for (int qb : gate.second) {
       ancillas.erase(qb);
     }
   }
@@ -445,7 +471,7 @@ set<int> Simulation::getAncillas(const ParallelGates& pg)
   set<int> ancillas;
 
   for (const auto& gate : pg)
-    for (int qb : gate)
+    for (int qb : gate.second)
       if (qb < 0)
 	ancillas.insert(qb);
   
@@ -585,14 +611,14 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
 					  const Architecture& architecture,
 					  Mapping& mapping, Cores& cores)
 {
-  assert(gate.size() == 2); // currently supported only two-input remote gates
+  assert(gate.second.size() == 2); // currently supported only two-input remote gates
 
   ParallelGates pg;
   
   // We assume that we want to teleport the qubit in input[0] of the
   // gate to the core where the qubit in input[1] of the gate is
   // located.
-  auto it = gate.begin();
+  auto it = gate.second.begin();
   int qubit_src = *it;
   ++it;
   int qubit_dst = *it;
@@ -609,7 +635,8 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
       else
 	next_qubit = allocateAncilla(next_core, architecture, mapping, cores);
 
-      pg.push_back({qubit_src, next_qubit});
+      Gate g(gate.first, {qubit_src, next_qubit});
+      pg.push_back(g);
     }
 
   return pg;

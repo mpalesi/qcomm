@@ -2,10 +2,11 @@
 #define __GATE_H__
 
 #include <list>
+#include <string>
 
 using namespace std;
 
-typedef list<int> Gate;
+typedef pair<string, list<int>> Gate; // <name of the gate, list of qubits>
 typedef list<Gate> ParallelGates;
 
 void displayGate(const Gate& gate, bool newline);

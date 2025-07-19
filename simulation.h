@@ -102,6 +102,8 @@ struct Simulation
   void removeUsedAncillas(set<int>& ancillas, const ParallelGates& pg);
   void freeAncillas(const set<int>& ancilla, Mapping& mapping, Cores& cores);
 
+  double getMaxGateLatency(const ParallelGates& lgates,
+			   const map<string,double>& gate_delays);
 };
 
 #endif

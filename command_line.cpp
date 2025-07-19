@@ -62,8 +62,6 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateDstSelectionMode(stod(value));
       else if (param == "mapping_type")
 	arch.updateMappingType(stod(value));
-      else if (param == "gate_delay")
-	params.updateGateDelay(stod(value));
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
       else if (param == "dist_delay")

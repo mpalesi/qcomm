@@ -235,6 +235,6 @@ void Statistics::addTeleportationsPerQubit(const int qb)
 void Statistics::addOperationsPerQubit(const ParallelGates& pgates, const int overhead)
 {
   for (const auto& gate : pgates)
-    for (const auto& qb : gate)
+    for (const auto& qb : gate.second)
       operations_per_qubit[qb] += 1 + overhead;
 }

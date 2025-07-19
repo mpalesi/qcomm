@@ -2,12 +2,12 @@
 #define __PARAMETERS_H__
 
 #include <string>
-
+#include <map>
 using namespace std;
 
 struct Parameters
 {
-  double gate_delay;
+  map<string,double> gate_delays; // <gate name, delay>
   double epr_delay;
   double dist_delay;
   double pre_delay;
@@ -25,10 +25,10 @@ struct Parameters
   Parameters() {}
 
   void display() const;
+  void displayGateDelays() const;
 
   bool readFromFile(const string& file_name);
 
-  void updateGateDelay(const double nv);
   void updateEPRDelay(const double nv);
   void updateDistDelay(const double nv);
   void updatePreDelay(const double nv);

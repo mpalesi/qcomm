@@ -4,11 +4,11 @@
 //----------------------------------------------------------------------
 void displayGate(const Gate& gate, bool newline)
 {
-  cout << "(";
-  for (auto qb = gate.begin(); qb != gate.end(); ++qb)
+  cout << gate.first << "(";
+  for (auto qb = gate.second.begin(); qb != gate.second.end(); ++qb)
     {
       cout << *qb;
-      if (next(qb) != gate.end())
+      if (next(qb) != gate.second.end())
 	cout << " ";
     }
   cout << ") ";

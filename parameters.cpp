@@ -5,12 +5,27 @@
 #include "utils.h"
 #include "parameters.h"
 
+void Parameters::displayGateDelays() const
+{
+  cout << "{";
+
+  for (auto it = gate_delays.begin(); it != gate_delays.end(); ++it)
+    {
+      cout << it->first << ": " << it->second;
+      if (it != prev(gate_delays.end()))
+	cout << ", ";
+    }
+    
+  cout << "} # sec" << endl;
+}
+
 void Parameters::display() const
 {
   cout << endl
        << "Parameters:" << endl
-       << IND << "gate_delay: " << gate_delay << " # sec" << endl
-       << IND << "epr_delay: " << epr_delay << " # sec" << endl
+       << IND << "gate_delays: ";
+  displayGateDelays();
+  cout << IND << "epr_delay: " << epr_delay << " # sec" << endl
        << IND << "dist_delay: " << dist_delay << " # sec" << endl
        << IND << "pre_delay: " << pre_delay << " # sec" << endl
        << IND << "post_delay: " << post_delay << " # sec" << endl
@@ -28,7 +43,7 @@ bool Parameters::readFromFile(const string& file_name)
   YAML::Node config;
   bool result = loadYAMLFile(file_name, config);
 
-  result &= getOrFail<double>(config, "gate_delay", file_name, gate_delay);
+  result &= getOrFail<map<string,double>>(config, "gate_delays", file_name, gate_delays);
   result &= getOrFail<double>(config, "epr_delay", file_name, epr_delay);
   result &= getOrFail<double>(config, "dist_delay", file_name, dist_delay);
   result &= getOrFail<double>(config, "pre_delay", file_name, pre_delay);
@@ -43,11 +58,6 @@ bool Parameters::readFromFile(const string& file_name)
   result &= getOrFail<bool>(config, "stats_detailed", file_name, stats_detailed);
   
   return result;
-}
-
-void Parameters::updateGateDelay(const double nv)
-{
-  gate_delay = nv;
 }
 
 void Parameters::updateEPRDelay(const double nv)

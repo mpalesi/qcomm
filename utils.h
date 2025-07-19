@@ -9,6 +9,7 @@
 #define ERR_ARCH_FILE 1  // exit error code if error while reading architecture file
 #define ERR_CIRC_FILE 2  // exit error code if error while reading circuit file
 #define ERR_PARM_FILE 3  // exit error code if error while reading parameters file
+#define ERR_UNDEF_GATE_DELAY 4 // exit error code if gate delay not found
 
 #define IND "  " // Indentation string used in YAML generated files
 
