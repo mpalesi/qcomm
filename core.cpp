@@ -1,3 +1,11 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: core.cpp
+// Description: Implementation of core structures and related functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
 #include <iostream>
 #include <cassert>
 #include "utils.h"

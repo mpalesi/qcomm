@@ -1,3 +1,11 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: statistics.h
+// Description: Declaration of statistics structures and related functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
 #ifndef __STATISTICS_H__
 #define __STATISTICS_H__
 

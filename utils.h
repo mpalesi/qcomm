@@ -1,3 +1,11 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: utils.h
+// Description: Declaration of utilities functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
 #ifndef __UTILS_H__
 #define __UTILS_H__
 

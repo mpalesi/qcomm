@@ -1,3 +1,11 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: noc.h
+// Description: Declaration of noc structures and related functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
 #ifndef __NOC_H__
 #define __NOC_H__
 

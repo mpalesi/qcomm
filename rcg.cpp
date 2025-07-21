@@ -1,3 +1,12 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: rcg.cpp
+// Description: Standalone tool for random circuit generation
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
+
 #include <iostream>
 #include <vector>
 #include <cassert>

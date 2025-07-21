@@ -1,3 +1,11 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: communication_time.h
+// Description: Declaration of communication_time structures and related functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
 #ifndef __COMMUNICATION_TIME_H__
 #define __COMMUNICATION_TIME_H__
 

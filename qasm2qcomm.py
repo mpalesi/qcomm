@@ -1,3 +1,34 @@
+""" 
+=============================================================================
+Project: qcomm - Quantum Communication Simulator
+File: qasm2qcomm.py
+Description:
+qasm2qcomm - QASM to QCOMM Parallel Slicer
+
+This tool parses a QASM 2.0 file using Qiskit, inlines all user-defined gates, 
+and emits the quantum circuit as a sequence of parallelizable gate slices. 
+Each line of output represents a set of gates that can be executed simultaneously,
+as they act on disjoint sets of qubits and respect gate dependencies.
+
+Features:
+- Parses OpenQASM 2.0 input using Qiskit
+- Inlines composite (user-defined) gates via transpilation
+- Excludes measurement operations from the output
+- Outputs each gate in the form GATENAME(q0 q1 ...) with qubit indices
+- Groups gates into parallel slices while preserving data dependencies
+
+Example usage:
+    python qasm2qcomm.py my_circuit.qasm
+
+Output format:
+    Each line: GATENAME(q0 q1 ...) GATENAME(q2 ...) ...
+    where gates on the same line can be executed in parallel
+
+## Author: Maurizio Palesi <maurizio.palesi@unict.it>
+## License: Apache-2.0 license (see LICENSE file for details)
+=============================================================================
+"""
+
 from qiskit import QuantumCircuit, transpile
 import sys
 

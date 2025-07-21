@@ -1,3 +1,12 @@
+// =============================================================================
+// Project: qcomm - Quantum Communication Simulator
+// File: communication.h
+// Description: Declaration of communication structures and related functions
+// Author: Maurizio Palesi <maurizio.palesi@unict.it>
+// License: Apache-2.0 license (see LICENSE file for details)
+// =============================================================================
+
+
 #ifndef __COMMUNICATION_H__
 #define __COMMUNICATION_H__
 
