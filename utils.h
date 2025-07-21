@@ -10,8 +10,10 @@
 #define __UTILS_H__
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include <set>
+#include <chrono>
 #include <yaml-cpp/yaml.h>
 
 #define ERR_ARCH_FILE 1  // exit error code if error while reading architecture file
@@ -25,6 +27,18 @@ using namespace std;
 
 // Show the banner
 void showBanner();
+
+// Show the commandline
+void showCommandLine(int argc, char* argv[]);
+
+// Start chrono
+void startChrono(chrono::high_resolution_clock::time_point& chrono_start);
+
+// Stop chrono and returns elapsed time in seconds from chrono_start
+double stopChrono(const chrono::high_resolution_clock::time_point& chrono_start);
+
+// Returns a string with the current date and time in "Y-m-d H:M:S" format
+string getCurrentDateTimeString();
 
 // Loads a YAML file. Returns true if successful, false otherwise, and
 // prints a specific error message to stderr

@@ -63,6 +63,8 @@ int main(int argc, char* argv[])
   overrideParameters(params_override, architecture, parameters);
 
   showBanner();
+
+  showCommandLine(argc, argv);
   
   circuit.display(false);
   architecture.display();
@@ -82,6 +84,7 @@ int main(int argc, char* argv[])
   
   Simulation simulation;
   Statistics stats = simulation.simulate(circuit, architecture, noc, parameters, mapping, cores);
+  simulation.display();
   
   stats.display(cores, architecture, parameters);
   

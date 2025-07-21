@@ -6,6 +6,9 @@
 // License: Apache-2.0 license (see LICENSE file for details)
 // =============================================================================
 
+#include <iostream>
+#include <ctime>
+#include <sstream>
 #include <random>
 #include "utils.h"
 
@@ -24,6 +27,43 @@ void showBanner()
 #        Email: maurizio.palesi@unict.it
 #        GitHub: https://github.com/mpalesi/qcomm
 )" << endl;
+}
+
+//----------------------------------------------------------------------
+void showCommandLine(int argc, char* argv[])
+{
+  cout << "command_line: '";
+  for (int i=0; i<argc; i++) {
+    cout << argv[i];
+    if (i != argc-1)
+      cout << " ";
+  }
+  
+  cout << "'" << endl;
+}
+
+//----------------------------------------------------------------------
+void startChrono(chrono::high_resolution_clock::time_point& chrono_start)
+{
+  chrono_start = chrono::high_resolution_clock::now();
+}
+
+double stopChrono(const chrono::high_resolution_clock::time_point& chrono_start)
+{
+  auto chrono_end = chrono::high_resolution_clock::now();
+  chrono::duration<double> elapsed = chrono_end - chrono_start;
+  return elapsed.count(); // seconds
+}
+
+//----------------------------------------------------------------------
+string getCurrentDateTimeString()
+{
+    auto now = chrono::system_clock::now();
+    time_t now_time = chrono::system_clock::to_time_t(now);
+
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", localtime(&now_time));
+    return string(buffer);
 }
 
 //----------------------------------------------------------------------

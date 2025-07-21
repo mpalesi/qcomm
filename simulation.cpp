@@ -18,6 +18,14 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
+void Simulation::display()
+{
+  cout << endl << "Simulation:" << endl
+       << IND << "simulation_date_time: '" << simulation_date_time << "'" << endl
+       << IND << "simulation_runtime: " << simulation_runtime << " # sec" << endl; 
+}
+
+// ----------------------------------------------------------------------
 bool Simulation::isLocalGate(const Gate& gate, const Mapping& mapping)
 {
   assert(!gate.second.empty());
@@ -513,6 +521,14 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 				const NoC& noc, const Parameters& parameters,
 				Mapping& mapping, Cores& cores)
 {
+  // save current date and time
+  simulation_date_time = getCurrentDateTimeString();
+    
+  // start chrono
+  std::chrono::high_resolution_clock::time_point chrono_start;
+  startChrono(chrono_start);
+
+  // run simulation
   Statistics global_stats(architecture.number_of_cores);
     
   cores.saveHistory(); // save the initial state of the cores
@@ -531,16 +547,13 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
             
       freeUnusedAncillas(it_pgates, lcircuit, mapping, cores);
 
-      /*
-      double th = noc.getThroughput(stats.intercore_volume,
-				    stats.communication_time.getTotalTime());
-      */
-
-      // global_stats.updateStatistics(stats, th);
       global_stats.updateStatistics(stats);
 
     }
 
+  // stop chrono and compute elapsed time
+  simulation_runtime = stopChrono(chrono_start);
+  
   return global_stats;
 }
 

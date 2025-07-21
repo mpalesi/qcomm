@@ -19,6 +19,11 @@
 
 struct Simulation
 {
+  string simulation_date_time;  
+  double simulation_runtime;
+
+  void display();
+  
   bool isLocalGate(const Gate& gate, const Mapping& mapping);
   void splitLocalRemoteGates(const ParallelGates& pgates, const Mapping& mapping,
 			     ParallelGates& lgates, ParallelGates& rgates);
