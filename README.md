@@ -100,3 +100,35 @@ Here:
 * `prob_i` is the probability to instantiating a gate with *i* inputs.
 
 The generated circuit is printed to standard output.
+
+### How to use `qasm2qcomm`
+`qasm2qcomm` is a command-line tool that parses OpenQASM 2.0 quantum circuits and outputs a dependency-respecting schedule of parallel gate slices. It is part of the qcomm project and is designed to help visualize and analyze the parallelism inherent in quantum circuits.
+
+#### What It Does
+* Parses standard **OpenQASM 2.0** files using [Qiskit](https://qiskit.org/)
+* **Inlines user-defined gates** and decomposes them into native gates
+* **Removes measurement operations** from the output
+* Outputs each circuit as a sequence of **slices**, where each slice contains gates that:
+  * Act on disjoint sets of qubits
+  * Can be executed in parallel
+  * Respect all gate dependencies
+
+#### Output Format
+Each line represents a time slice of parallel gates:
+```scss
+GATENAME(q0 q1 ...) GATENAME(q2 ...) ...
+```
+For example:
+```scss
+X(0) H(2)
+CX(0 1) X(3)
+CX(2 3)
+```
+#### Usage
+```bash
+python qasm2qcomm.py my_circuit.qasm
+```
+Requires Python and [Qiskit](https://qiskit.org/). Install Qiskit with:
+```bash
+pip install qiskit
+```
