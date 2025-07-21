@@ -62,6 +62,8 @@ int main(int argc, char* argv[])
 
   overrideParameters(params_override, architecture, parameters);
 
+  showBanner();
+  
   circuit.display(false);
   architecture.display();
   parameters.display();

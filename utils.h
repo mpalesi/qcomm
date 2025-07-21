@@ -23,6 +23,9 @@
 
 using namespace std;
 
+// Show the banner
+void showBanner();
+
 // Loads a YAML file. Returns true if successful, false otherwise, and
 // prints a specific error message to stderr
 bool loadYAMLFile(const string& file_name, YAML::Node& config);

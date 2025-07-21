@@ -10,6 +10,23 @@
 #include "utils.h"
 
 //----------------------------------------------------------------------
+void showBanner()
+{
+  cout << R"(
+#   __ _  ___ ___  _ __ ___  _ __ ___  
+#  / _` |/ __/ _ \| '_ ` _ \| '_ ` _ \ 
+# | (_| | (_| (_) | | | | | | | | | | |
+#  \__, |\___\___/|_| |_| |_|_| |_| |_|
+#    |_|                              
+#        
+#        qcomm - Quantum Communication Simulator
+#        Author: Maurizio Palesi (University of Catania)
+#        Email: maurizio.palesi@unict.it
+#        GitHub: https://github.com/mpalesi/qcomm
+)" << endl;
+}
+
+//----------------------------------------------------------------------
 bool loadYAMLFile(const string& file_name, YAML::Node& config)
 {
   try {
