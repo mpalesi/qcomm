@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <algorithm>
 #include "utils.h"
 #include "noc.h"
 
@@ -21,15 +22,6 @@ NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _clock_time, int _qub
   link_width = _link_width;
   clock_time = _clock_time;
   qubit_addr_bits = _qubit_addr_bits;
-  
-  // int address_size = ceil(log2(mesh_x * mesh_y * _qubits_per_core));
-
-  /*
-  packet_size = 2 + 2*address_size; // 2 bits per teleportation
-				    // protocol, 2*address_size bit
-				    // for src and dst
-  cycles_per_packet = ceil((double)packet_size / link_width);
-  */
 }
 
 void NoC::enableWiNoC(const double _bit_rate, const int _radio_channels, double _token_pass_time)
@@ -39,6 +31,8 @@ void NoC::enableWiNoC(const double _bit_rate, const int _radio_channels, double 
   wbit_rate = _bit_rate;
   radio_channels = _radio_channels;
   token_pass_time = _token_pass_time;
+
+  initializeTokenOwnerMap();
 }
 
 void NoC::display()
@@ -53,7 +47,8 @@ void NoC::display()
     }
   else
     {
-      cout << "WiNoC:" << endl
+      cout << endl
+	   << "WiNoC:" << endl
 	   << IND << "bit_rate: " << wbit_rate << " # bps" << endl
 	   << IND << "radio_channels: " << radio_channels << endl
 	   << IND << "token_pass_time: " << token_pass_time << " # sec" << endl;
@@ -231,15 +226,92 @@ double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) cons
   return clock_cycle * clock_time;
 }
 
+void NoC:: initializeTokenOwnerMap()
+{
+  // Initialize token_owner_map (tom) in such a way tokens are equally
+  // distributed among the cores
+  // Examples: 4 cores, 1 radio channel: tom[0] = 0
+  //           4 cores, 2 radio channels: tom[0] = 0, tom[1] = 2
+  //           4 cores, 3 radio channels: tom[s0] = 0, tom[1] = 1, tom[2] = 2
+  token_owner_map.resize(radio_channels);
+  int ncores = mesh_x * mesh_y;
+  int step = ncores / radio_channels;
+  int core_id = 0;
+  for (int rc=0; rc < radio_channels; rc++)
+    {
+      token_owner_map[rc] = core_id;
+      core_id += (step % ncores);
+    }
+}
+
+
+int NoC::getRadioChannel(const int src_node) const
+{
+  for (int rc=0; rc < radio_channels; rc++)
+    if (token_owner_map[rc] == src_node)
+      return rc;
+
+  return -1;
+}
+
+void NoC::advanceTokensAndUpdateTimeLine(vector<double>& timeline) const
+{
+  for (int rc=0; rc < radio_channels; rc++)
+    {
+      // advance token to the next core in sequence
+      token_owner_map[rc] = (token_owner_map[rc] + 1) % (mesh_x * mesh_y);
+
+      // update the timeline with token_pass_time
+      timeline[rc] += token_pass_time;
+    }
+}
+
 double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
 {
-  double ctime = 0.0;
+  // Simulate a token-passing mechanism. There are as many tokens as
+  // there are radio channels. The tokens circulate sequentially among
+  // the wireless interfaces (WIs). A WI holding a token is allowed to
+  // use the corresponding radio channel and may retain it for the
+  // entire duration of its transmission. After the transmission, the
+  // token is passed to the next WI in the sequence. The act of
+  // passing the token introduces a delay, referred to as
+  // token_pass_time.
+  vector<double> timeline(radio_channels, 0.0);
+  ParallelCommunications pc = pcomms;
+  while (!pc.empty())
+    {
+      ParallelCommunications::iterator curr = pc.begin();
+      
+      do {
+	int src_core = curr->src_core;
+	int rc = getRadioChannel(src_core);
 
-  for (Communication comm : pcomms)
-    ctime += getTransferTime(comm.volume);
-  
-  return ctime;
+	if (rc == -1)
+	  {
+	    // No radio channel available for src_core, continue with
+	    // next communciation;
+	    curr++;
+	  }
+	else {
+	  // update the timeline associated to radio channel rc
+	  timeline[rc] += getTransferTime(curr->volume);
+
+	  // remove communication from the list of parallel
+	  // communications
+	  curr = pc.erase(curr);
+	}
+      } while (curr != pc.end());
+
+      advanceTokensAndUpdateTimeLine(timeline);
+    }
+
+  // The communication time is the maximum among the timelines
+  auto max_it = max_element(timeline.begin(), timeline.end());
+  assert(max_it != timeline.end());
+  return *max_it;
 }
+
+ 
 
 double NoC::getCommunicationTime(const ParallelCommunications& pcomms) const
 {
@@ -254,12 +326,7 @@ double NoC::getTransferTime(int volume) const
   if (!winoc)
     return volume / (link_width / clock_time);
   else
-    {
-        int nodes = mesh_x * mesh_y;
-	double avg_token_waiting_time = (nodes/2) * token_pass_time / radio_channels;
-	return avg_token_waiting_time + (volume / wbit_rate);
-    }
-
+    return volume / wbit_rate;
 }
 
 int NoC::linkTraversalCycles(int volume) const

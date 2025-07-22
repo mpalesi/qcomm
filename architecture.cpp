@@ -43,7 +43,7 @@ void Architecture::display() const
 
   cout << IND << "wireless_enabled: " << boolalpha << wireless_enabled << endl;
   if (wireless_enabled)
-    cout << "radio_channels: " << radio_channels << endl;
+    cout << IND << "radio_channels: " << radio_channels << endl;
 
   cout << IND << "mapping_type: " << mapping_type;
   if (mapping_type == MAP_RANDOM)

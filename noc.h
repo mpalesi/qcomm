@@ -11,7 +11,7 @@
 
 #include <map>
 #include <queue>
-
+#include <vector>
 #include "communication.h"
 
 using namespace std;
@@ -22,18 +22,24 @@ struct NoC
   int    link_width;
   double clock_time;
   int    qubit_addr_bits;
-  //  double hop_time;
-  //  int    packet_size;
-  //  int    cycles_per_packet;
   double wbit_rate;
   int    radio_channels;
   double token_pass_time;
-  //  double wpacket_time;
   
   bool   winoc;
+  mutable vector<int> token_owner_map; // token_owner_map[rc] gives the core_id
+			       // enabled to use the radio channel rc
+
   
   NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time, int _qubits_per_core);
 
+  void initializeTokenOwnerMap();
+
+  // returns the first available radio channel for src_node, -1 if
+  // radio channels are availble for src_node
+  int getRadioChannel(const int src_node) const;
+  void advanceTokensAndUpdateTimeLine(vector<double>& timeline) const;
+  
   void enableWiNoC(const double _bit_rate, const int _radio_channels, double _token_pass_time);
   
   void display();
