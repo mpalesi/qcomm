@@ -117,6 +117,9 @@ struct Simulation
 
   double getMaxGateLatency(const ParallelGates& lgates,
 			   const map<string,double>& gate_delays);
+
+  ParallelCommunications removeMI2Node0Communications(const ParallelCommunications& pcomms);
+
 };
 
 #endif

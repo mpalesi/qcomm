@@ -407,8 +407,52 @@ ParallelCommunications Simulation::makeDispatchCommunications(const ParallelGate
   return pc;
 }
 
+// Returns all the communications into pcomms except those (0,0)
+ParallelCommunications Simulation::removeMI2Node0Communications(const ParallelCommunications& pcomms)
+{
+  ParallelCommunications filtered;
+
+    for (const auto& comm : pcomms)
+      if (!(comm.src_core == 0 && comm.dst_core == 0))
+	filtered.push_back(comm);
+
+    return filtered;
+}
+
 // ----------------------------------------------------------------------
-// We assume the memory controller is connected to core 0
+/* 
+   We assume that the memory interface (MI) is connected to core 0.
+
+   Note: Communications from the memory interface to the NoC/WiNoC use
+   source node ID 0. This can be misleading, as it becomes unclear
+   whether a message originating from node 0 is actually from the MI
+   or from core 0. Thus, dispatch communications are represented as
+   (0, dst).
+
+   Wired case:
+   If dst != 0, we compute the communication time from node 0 to dst,
+   and then add the transfer time from the MI to node 0:
+
+   stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+
+   However, if dst == 0, this transfer time is counted
+   twice. Communications of the form (0, 0) are included both in
+   noc.getCommunicationTime(pcomms) and in
+   noc.getTransferTime(getTotalCommunicationVolume(pcomms)). As a
+   result, the dispatch time for the wired case is overestimated.
+
+   To correct this, we remove the (0, 0) communications from the
+   pcomms and compute the NoC delay using the filtered communication
+   traffic (fpcomms). Then, we update dispatch_time with the delay due
+   to the transfer from the MI to node 0.
+
+   Wireless case:
+   In this case, communications of the form (0, 0) do not pose a
+   significant issue. The only minor inaccuracy arises from assuming
+   there are ncores WIs instead of (ncores + 1). This makes the token
+   ring slightly shorter than it should be, leading to a slightly
+   optimistic estimation.
+*/
 void Simulation::dispatchContribution(Statistics& stats,
 				      const ParallelGates& pgates,
 				      const Architecture& architecture,
@@ -418,17 +462,39 @@ void Simulation::dispatchContribution(Statistics& stats,
 {
   ParallelCommunications pcomms = makeDispatchCommunications(pgates, architecture, parameters, mapping);
 
-  if (architecture.wireless_enabled)
-    stats.dispatch_time = noc.getTransferTime(getTotalCommunicationVolume(pcomms));
-  else {
-    stats.dispatch_time = noc.getCommunicationTime(pcomms);
 
-    // Only for wired interconnect add the one-hop delay for communication between MC to core 0.
-    stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
-  }
+  if (architecture.wireless_enabled)
+    {
+      stats.dispatch_time = noc.getCommunicationTime(pcomms);
+    }
+  else
+    {
+      // Remove communications from MI to core 0 as their latency contribution will be computed apart
+      ParallelCommunications fpcomms = removeMI2Node0Communications(pcomms);
+
+      // Compute the latencty contribution of the dispatch from core 0 connected to the MI to the other cores
+      stats.dispatch_time = noc.getCommunicationTime(fpcomms);
+      
+      // Add the latency contribution of the transmissions from MI to core 0
+      stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+    }
+
+  stats.total_intercore_comms += pcomms.size();
+  stats.intercore_volume += getTotalCommunicationVolume(pcomms);
+
+      /*
+  stats.dispatch_time = noc.getCommunicationTime(pcomms);
+
+  if (!architecture.wireless_enabled)
+    {
+      // Only for wired interconnect add the one-hop delay for communication between MC to core 0.
+      stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+    }
   
   stats.total_intercore_comms += pcomms.size();
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
+      */
+      
 }
 
 // ----------------------------------------------------------------------
