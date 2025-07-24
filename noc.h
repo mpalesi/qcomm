@@ -47,8 +47,9 @@ struct NoC
   double getCommunicationTime(const ParallelCommunications& pc) const;
 
   double getCommunicationTimeWired(const ParallelCommunications& pc) const;
-  double getCommunicationTimeWireless(const ParallelCommunications& pc) const;
-  
+  double getCommunicationTimeWireless(const ParallelCommunications& pc) const; // standard token based MAC
+  double getCommunicationTimeWirelessLTP(const ParallelCommunications& pcomms) const; // LPT based MAC
+
   int routingXY(const int src_core, const int dst_core) const;
   void getCoreXY(const int core_id, int& x, int& y) const;
   int getCoreID(const int x, const int y) const;

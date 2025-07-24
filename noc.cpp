@@ -266,6 +266,37 @@ void NoC::advanceTokensAndUpdateTimeLine(vector<double>& timeline) const
     }
 }
 
+// Input:
+
+// Assign transmissions to channels to minimize the makespan (i.e.,
+// the time when the last channel finishes).  Longest Processing Time
+// First (LPT) heuristic Sort comms in descending duration
+// (transmission time), then assign to channel with min current load
+double NoC::getCommunicationTimeWirelessLTP(const ParallelCommunications& pcomms) const
+{
+  // 1. sort the communication in descending order based on volume
+  vector<Communication> comm_vector(pcomms.begin(), pcomms.end());
+  sort(comm_vector.begin(), comm_vector.end(),
+       [](const Communication& a, const Communication& b) {
+	 return a.volume > b.volume; // descending
+       });
+
+
+  // 2. Builds the timeline. Currently, volumes are used instead of
+  // times, so the values are converted to time before being returned.
+  vector<int> timeline(radio_channels, 0);
+  for (auto& comm : comm_vector)
+    {
+      auto min_it = min_element(timeline.begin(), timeline.end());
+      *min_it += comm.volume;
+    }
+
+  // 3. Select the longest timeline
+  auto max_it = max_element(timeline.begin(), timeline.end());
+  
+  return *max_it / wbit_rate;
+}
+					    
 double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
 {
   // Simulate a token-passing mechanism. There are as many tokens as
