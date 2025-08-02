@@ -13,45 +13,31 @@
 #include "utils.h"
 #include "noc.h"
 
-NoC::NoC(int _mesh_x, int _mesh_y, int _link_width, double _clock_time, int _qubit_addr_bits)
-{
-  winoc = false;
-  
-  mesh_x = _mesh_x;
-  mesh_y = _mesh_y;
-  link_width = _link_width;
-  clock_time = _clock_time;
-  qubit_addr_bits = _qubit_addr_bits;
-}
 
-void NoC::enableWiNoC(const double _bit_rate, const int _radio_channels, double _token_pass_time)
-{
-  winoc = true;
-
-  wbit_rate = _bit_rate;
-  radio_channels = _radio_channels;
-  token_pass_time = _token_pass_time;
-
-  initializeTokenOwnerMap();
-}
 
 void NoC::display()
 {
   if (!winoc)
     {
-      cout << endl
-	   << "NoC:" << endl
-	   << IND << "mesh_size: '" << mesh_x << "x" << mesh_y << "'" << endl
-	   << IND << "clock_period: " << clock_time << " # sec" << endl
-	   << IND << "link_width: " << link_width << " # bits" << endl;
+      cout << IND << "NoC:" << endl
+	   << IND << IND << "mesh_size: '" << mesh_x << "x" << mesh_y << "'" << endl
+	   << IND << IND << "clock_period: " << clock_time << " # sec" << endl
+	   << IND << IND << "link_width: " << link_width << " # bits" << endl;
     }
   else
     {
-      cout << endl
-	   << "WiNoC:" << endl
-	   << IND << "bit_rate: " << wbit_rate << " # bps" << endl
-	   << IND << "radio_channels: " << radio_channels << endl
-	   << IND << "token_pass_time: " << token_pass_time << " # sec" << endl;
+      cout << IND << "WiNoC:" << endl
+	   << IND << IND << "bit_rate: " << wbit_rate << " # bps" << endl
+	   << IND << IND << "radio_channels: " << radio_channels << endl
+	   << IND << IND << "token_pass_time: " << token_pass_time << " # sec" << endl
+	   << IND << IND << "wireless_mac: " << wireless_mac;
+      
+      if (wireless_mac == WIRELESS_MAC_TOKEN)
+	cout << " # token passing" << endl;
+      else if (wireless_mac == WIRELESS_MAC_LPT)
+	cout << " # LPT (longest processing time)" << endl;
+      else
+	cout << " # ??\?" << endl;
     }
 }
 
@@ -226,7 +212,7 @@ double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) cons
   return clock_cycle * clock_time;
 }
 
-void NoC:: initializeTokenOwnerMap()
+void NoC::initializeTokenOwnerMap()
 {
   // Initialize token_owner_map (tom) in such a way tokens are equally
   // distributed among the cores

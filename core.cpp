@@ -11,27 +11,28 @@
 #include "utils.h"
 #include "core.h"
 
-Cores::Cores(const Architecture& architecture, const Mapping& mapping)
+
+void Cores::initCores(const int number_of_cores, const int qubits_per_core)
 {
   ancilla_counter = 0;
   
-  cores.resize(architecture.number_of_cores);
+  cores.resize(number_of_cores);
   
   int nqubits = mapping.qubit2core.size();
   for (int qb=0; qb<nqubits; qb++)
     {
       if (!mapping.isMapped(qb))
 	{
-	  cerr << "qubit " << qb << " is not mapped!" << endl;
+	  cerr << "Error: qubit " << qb << " is not mapped!" << endl;
 	  assert(false);
 	}
       int core_no = mapping.qubit2core.at(qb);
       
       cores[core_no].insert(qb);
       
-      if ((int)cores[core_no].size() > architecture.qubits_per_core)
+      if ((int)cores[core_no].size() > qubits_per_core)
 	{
-	  cout << "Number of qubits mapped on core " << core_no
+	  cerr << "Error: Number of qubits mapped on core " << core_no
 	       << " exceeds its capacity." << endl;
 	  assert(false);
 	}
@@ -50,16 +51,15 @@ void Cores::saveHistory()
 
 void Cores::display()
 {
-  cout << endl
-       << "Cores:" << endl;
+  cout << IND << "Cores:" << endl;
 
-  cout << IND << "number_of_cores: " << cores.size() << endl;
+  cout << IND << IND << "number_of_cores: " << cores.size() << endl;
   
-  cout << IND << "qubits_per_core:" << endl;
+  cout << IND << IND << "qubits_per_core:" << endl;
   int ncores = cores.size();  
   for (int core_id=0; core_id<ncores; core_id++)
     {
-      cout << IND << IND << "'core " << core_id << "': ";
+      cout << IND << IND << IND << "'core " << core_id << "': ";
       cout << "[";
 
       set<int> qbs = cores[core_id];
@@ -81,12 +81,12 @@ int Cores::generateAncillaId()
 }
 
 bool Cores::allocateAncilla(const int core_id,
-			    const Architecture& architecture,
-			    Mapping& mapping, int& ancilla)
+			    const int qubits_per_core,
+			    int& ancilla)
 {
   Core core = cores[core_id];
 
-  if ( core.size() >= static_cast<size_t>(architecture.qubits_per_core) )
+  if ((int)core.size() >= qubits_per_core)
     return false;
 
   ancilla = generateAncillaId();

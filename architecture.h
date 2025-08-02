@@ -10,6 +10,8 @@
 #define __ARCHITECTURE_H__
 
 #include <string>
+#include "noc.h"
+#include "core.h"
 
 using namespace std;
 
@@ -22,19 +24,19 @@ using namespace std;
 
 struct Architecture
 {
-  int    mesh_x, mesh_y;
-  int    link_width;
-  int    qubits_per_core;
-  int    ltm_ports;
-  int    radio_channels;
-  int    number_of_cores; // derived value
-  bool   wireless_enabled;
-  int    teleportation_type;
-  int    dst_selection_mode;
-  int    mapping_type;
-  
-  Architecture() {}
+  int     qubits_per_core;
+  int     ltm_ports;
+  int     number_of_cores; // derived value
+  int     total_physical_qubits; // derived value
+  int     teleportation_type;
+  int     dst_selection_mode;
+  int     mapping_type;
 
+  Cores&  cores;
+  NoC&    noc;
+  
+  Architecture(Cores& cores_ref, NoC& noc_ref) : cores(cores_ref), noc(noc_ref) {}
+  
   void display() const;
 
   // Read the architecture from a YAML file. Returns true if success,
@@ -49,6 +51,7 @@ struct Architecture
   void updateRadioChannels(const int nv);
   void updateWirelessEnabled(const int nv);
   void updateTeleportationType(const int nv);
+  void updateWirelessMAC(const int nv);
   void updateDstSelectionMode(const int nv);
   void updateMappingType(const int nv);
 

@@ -11,6 +11,8 @@
 
 #include <string>
 #include <map>
+#include "noc.h"
+
 using namespace std;
 
 struct Parameters
@@ -20,17 +22,16 @@ struct Parameters
   double dist_delay;
   double pre_delay;
   double post_delay;
-  double noc_clock_time;
-  double wbit_rate;
-  double token_pass_time;
   double memory_bandwidth; // bits/sec
   int    bits_instruction; // number of bits used for encoding an instruction
   double decode_time_per_instruction;
   double t1; // thermal relaxation time
   bool   stats_detailed;
   
+
+  NoC&   noc;
   
-  Parameters() {}
+  Parameters(NoC& noc_ref) : noc(noc_ref) {}
 
   void display() const;
   void displayGateDelays() const;

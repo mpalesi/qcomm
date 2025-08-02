@@ -457,15 +457,14 @@ void Simulation::dispatchContribution(Statistics& stats,
 				      const ParallelGates& pgates,
 				      const Architecture& architecture,
 				      const Parameters& parameters,
-				      const Mapping& mapping,
-				      const NoC& noc)
-{
+				      const Mapping& mapping)
+{  
   ParallelCommunications pcomms = makeDispatchCommunications(pgates, architecture, parameters, mapping);
 
 
-  if (architecture.wireless_enabled)
+  if (architecture.noc.winoc)
     {
-      stats.dispatch_time = noc.getCommunicationTime(pcomms);
+      stats.dispatch_time = architecture.noc.getCommunicationTime(pcomms);
     }
   else
     {
@@ -473,28 +472,14 @@ void Simulation::dispatchContribution(Statistics& stats,
       ParallelCommunications fpcomms = removeMI2Node0Communications(pcomms);
 
       // Compute the latencty contribution of the dispatch from core 0 connected to the MI to the other cores
-      stats.dispatch_time = noc.getCommunicationTime(fpcomms);
+      stats.dispatch_time = architecture.noc.getCommunicationTime(fpcomms);
       
       // Add the latency contribution of the transmissions from MI to core 0
-      stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
+      stats.dispatch_time += architecture.noc.getTransferTime(getTotalCommunicationVolume(pcomms));
     }
 
   stats.total_intercore_comms += pcomms.size();
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
-
-      /*
-  stats.dispatch_time = noc.getCommunicationTime(pcomms);
-
-  if (!architecture.wireless_enabled)
-    {
-      // Only for wired interconnect add the one-hop delay for communication between MC to core 0.
-      stats.dispatch_time += noc.getTransferTime(getTotalCommunicationVolume(pcomms));
-    }
-  
-  stats.total_intercore_comms += pcomms.size();
-  stats.intercore_volume += getTotalCommunicationVolume(pcomms);
-      */
-      
 }
 
 // ----------------------------------------------------------------------
@@ -520,7 +505,7 @@ Statistics Simulation::simulate(const ParallelGates& pgates, const Architecture&
 
   decodeContribution(stats_overall, pgates, parameters);
 
-  dispatchContribution(stats_overall, pgates, architecture, parameters, mapping, noc);
+  dispatchContribution(stats_overall, pgates, architecture, parameters, mapping);
 		       
   return stats_overall;
 }
@@ -606,7 +591,7 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
        it_pgates != lcircuit.end(); it_pgates++)
     {
       ParallelGates parallel_gates = FixParallelGatesAndUpdateCircuit(it_pgates, lcircuit,
-								      architecture, mapping, cores);
+								      architecture);
 
       Statistics stats = simulate(parallel_gates, architecture, noc,
 				  parameters, mapping, cores);
@@ -625,19 +610,18 @@ Statistics Simulation::simulate(const Circuit& circuit, const Architecture& arch
 
 // ----------------------------------------------------------------------
 vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_dst,
-					  const Architecture& architecture,
-					  const Mapping& mapping)
+					  const Architecture& architecture)
 {
   vector<int> path;
   
-  int src_core = mapping.qubit2CoreSafe(qubit_src);
-  int dst_core = mapping.qubit2CoreSafe(qubit_dst);
+  int src_core = architecture.cores.mapping.qubit2CoreSafe(qubit_src);
+  int dst_core = architecture.cores.mapping.qubit2CoreSafe(qubit_dst);
   
   // XY routing
-  int xs = src_core % architecture.mesh_x;
-  int ys = src_core / architecture.mesh_x;
-  int xd = dst_core % architecture.mesh_x;
-  int yd = dst_core / architecture.mesh_x;
+  int xs = src_core % architecture.noc.mesh_x;
+  int ys = src_core / architecture.noc.mesh_x;
+  int xd = dst_core % architecture.noc.mesh_x;
+  int yd = dst_core / architecture.noc.mesh_x;
 
   path.push_back(src_core);
   int x = xs;
@@ -653,7 +637,7 @@ vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_d
       else if (y > yd)
 	y--;
 
-      int curr_core = y * architecture.mesh_x + x;
+      int curr_core = y * architecture.noc.mesh_x + x;
       path.push_back(curr_core);
     }
 
@@ -664,23 +648,20 @@ vector<int> Simulation::computeTPPathMesh(const int qubit_src, const int qubit_d
 // Computhe the path from source qubit to destination qubit based on
 // the current teleportation type
 vector<int> Simulation::computeTPPath(const int qubit_src, const int qubit_dst,
-				      const Architecture& architecture,
-				      const Mapping& mapping)
+				      const Architecture& architecture)
 {
   if (architecture.teleportation_type == TP_TYPE_MESH)
-    return computeTPPathMesh(qubit_src, qubit_dst, architecture, mapping);
+    return computeTPPathMesh(qubit_src, qubit_dst, architecture);
   else
     assert(false);
 }
 
 // ----------------------------------------------------------------------
 int Simulation::allocateAncilla(const int core_id,
-				const Architecture& architecture,
-				Mapping& mapping, Cores& cores)
-{
+				const Architecture& architecture){
   int ancilla;
   
-  if (!cores.allocateAncilla(core_id, architecture, mapping, ancilla))
+  if (!architecture.cores.allocateAncilla(core_id, architecture.qubits_per_core, ancilla))
     {
       cerr << "Cannot allocate ancilla on core " << core_id << endl;
       assert(false);
@@ -695,8 +676,7 @@ int Simulation::allocateAncilla(const int core_id,
 // (ancilla qubits) are allocated, the mapping and core structures are
 // updated accordingly.
 ParallelGates Simulation::splitRemoteGate(const Gate& gate,
-					  const Architecture& architecture,
-					  Mapping& mapping, Cores& cores)
+					  const Architecture& architecture)
 {
   assert(gate.second.size() == 2); // currently supported only two-input remote gates
 
@@ -710,7 +690,7 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
   ++it;
   int qubit_dst = *it;
   
-  vector<int> path = computeTPPath(qubit_src, qubit_dst, architecture, mapping);
+  vector<int> path = computeTPPath(qubit_src, qubit_dst, architecture);
 
   int next_qubit;
   for (size_t i=1; i<path.size(); i++)
@@ -720,7 +700,7 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
       if (i == path.size()-1) // next_core is the last core in the path
 	next_qubit = qubit_dst;
       else
-	next_qubit = allocateAncilla(next_core, architecture, mapping, cores);
+	next_qubit = allocateAncilla(next_core, architecture);
 
       Gate g(gate.first, {qubit_src, next_qubit});
       pg.push_back(g);
@@ -738,13 +718,12 @@ ParallelGates Simulation::splitRemoteGate(const Gate& gate,
 // the expansion of a remote gate into a sequence of remote gates
 // involving qubits belonging to connected cores
 list<ParallelGates> Simulation::splitRemoteGates(const ParallelGates& rgates,
-						 const Architecture& architecture,
-						 Mapping& mapping, Cores& cores)
+						 const Architecture& architecture)
 {
   list<ParallelGates> pgates_list;
   
   for (const auto& gate : rgates)
-    pgates_list.push_back(splitRemoteGate(gate, architecture, mapping, cores));
+    pgates_list.push_back(splitRemoteGate(gate, architecture));
     
   return pgates_list;
 }
@@ -805,8 +784,7 @@ ParallelGates Simulation::insertSequenceParallelGates(list<ParallelGates>::itera
 // updated accordingly to accommodate the additional introduced slices
 ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator& it_pgates,
 							   list<ParallelGates>& circuit,
-							   const Architecture& architecture,
-							   Mapping& mapping, Cores& cores)
+							   const Architecture& architecture)
 {
   ParallelGates pgates = *it_pgates;
 
@@ -814,9 +792,9 @@ ParallelGates Simulation::FixParallelGatesAndUpdateCircuit(list<ParallelGates>::
     return pgates; 
 
   ParallelGates lgates, rgates;
-  splitLocalRemoteGates(pgates, mapping, lgates, rgates);
+  splitLocalRemoteGates(pgates, architecture.cores.mapping, lgates, rgates);
   
-  list<ParallelGates> pgates_list_par = splitRemoteGates(rgates, architecture, mapping, cores);
+  list<ParallelGates> pgates_list_par = splitRemoteGates(rgates, architecture);
   
   list<ParallelGates> pgates_list_seq = sequenceParallelGates(lgates, pgates_list_par);
 

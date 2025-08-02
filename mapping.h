@@ -22,7 +22,7 @@ struct Mapping
 
   Mapping() {}
 
-  Mapping(const int nqubits, const int ncores, const int mapping_type);
+  void initMapping(const int nqubits, const int ncores, const int mapping_type);
 
   void display();
 

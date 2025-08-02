@@ -37,9 +37,6 @@ void Parameters::display() const
        << IND << "dist_delay: " << dist_delay << " # sec" << endl
        << IND << "pre_delay: " << pre_delay << " # sec" << endl
        << IND << "post_delay: " << post_delay << " # sec" << endl
-       << IND << "noc_clock_time: " << noc_clock_time << " # sec" << endl
-       << IND << "wbit_rate: " << wbit_rate << " # bps" << endl
-       << IND << "token_pass_time: " << token_pass_time << " # sec" << endl
        << IND << "memory_mandwidth: " << memory_bandwidth << " # bps" << endl
        << IND << "bits_instruction: " << bits_instruction << " # bits" << endl
        << IND << "decode_time_per_instruction: " << decode_time_per_instruction << " # sec" << endl
@@ -56,9 +53,9 @@ bool Parameters::readFromFile(const string& file_name)
   result &= getOrFail<double>(config, "dist_delay", file_name, dist_delay);
   result &= getOrFail<double>(config, "pre_delay", file_name, pre_delay);
   result &= getOrFail<double>(config, "post_delay", file_name, post_delay);
-  result &= getOrFail<double>(config, "noc_clock_time", file_name, noc_clock_time);
-  result &= getOrFail<double>(config, "wbit_rate", file_name, wbit_rate);
-  result &= getOrFail<double>(config, "token_pass_time", file_name, token_pass_time);
+  result &= getOrFail<double>(config, "noc_clock_time", file_name, noc.clock_time);
+  result &= getOrFail<double>(config, "wbit_rate", file_name, noc.wbit_rate);
+  result &= getOrFail<double>(config, "token_pass_time", file_name, noc.token_pass_time);
   result &= getOrFail<double>(config, "memory_bandwidth", file_name, memory_bandwidth);
   result &= getOrFail<int>(config, "bits_instruction", file_name, bits_instruction);
   result &= getOrFail<double>(config, "decode_time_per_instruction", file_name, decode_time_per_instruction);
@@ -90,17 +87,17 @@ void Parameters::updatePostDelay(const double nv)
 
 void Parameters::updateNoCClockTime(const double nv)
 {
-  noc_clock_time = nv;
+  noc.clock_time = nv;
 }
   
 void Parameters::updateWBitRate(const double nv)
 {
-  wbit_rate = nv;
+  noc.wbit_rate = nv;
 }
 
 void Parameters::updateTokenPassTime(const double nv)
 {
-  token_pass_time = nv;
+  noc.token_pass_time = nv;
 }
 
 void Parameters::updateMemoryBandwidth(const double nv)

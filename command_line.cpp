@@ -66,6 +66,8 @@ void overrideParameters(const map<string,string>& params_override,
 	arch.updateWirelessEnabled(stoi(value));
       else if (param == "teleportation_type")
 	arch.updateTeleportationType(stod(value));
+      else if (param == "wireless_mac")
+	arch.updateWirelessMAC(stod(value));
       else if (param == "dst_selection_mode")
 	arch.updateDstSelectionMode(stod(value));
       else if (param == "mapping_type")

@@ -5,6 +5,7 @@ qubits_per_core: 10
 ltm_ports: 1
 radio_channels: 1
 wireless_enabled: false
-teleportation_type: 0
-dst_selection_mode: 1
-mapping_type: 1
+wireless_mac: 0 # 0=token, 1=lpt
+teleportation_type: 0 # 0=all-to-all, 1=mesh
+dst_selection_mode: 1 # 0=load-independent, 1=load-aware
+mapping_type: 1 # 0=random, 1=sequential

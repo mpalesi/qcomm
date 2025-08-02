@@ -69,8 +69,7 @@ struct Simulation
 			    const ParallelGates& pgates,
 			    const Architecture& architecture,
 			    const Parameters& parameters,
-			    const Mapping& mapping,
-			    const NoC& noc);
+			    const Mapping& mapping);
   ParallelCommunications makeDispatchCommunications(const ParallelGates& pgates,
 						    const Architecture& architecture,
 						    const Parameters& parameters,
@@ -84,20 +83,15 @@ struct Simulation
 		      Mapping& mapping, Cores& cores);
 
   vector<int> computeTPPathMesh(const int qubit_src, const int qubit_dst,
-				const Architecture& architecture,
-				const Mapping& mapping);
+				const Architecture& architecture);
   vector<int> computeTPPath(const int qubit_src, const int qubit_dst,
-			    const Architecture& architecture,
-			    const Mapping& mapping);
+			    const Architecture& architecture);
   int allocateAncilla(const int core_id,
-		      const Architecture& architecture,
-		      Mapping& mapping, Cores& cores);
+		      const Architecture& architecture);
   ParallelGates splitRemoteGate(const Gate& gate,
-				const Architecture& architecture,
-				Mapping& mapping, Cores& cores);
+				const Architecture& architecture);
   list<ParallelGates> splitRemoteGates(const ParallelGates& rgates,
-				       const Architecture& architecture,
-				       Mapping& mapping, Cores& cores);
+				       const Architecture& architecture);
   list<ParallelGates> sequenceParallelGates(const ParallelGates& lgates,
 					    const list<ParallelGates>& pgates_list_par);
   ParallelGates insertSequenceParallelGates(list<ParallelGates>::iterator& it_pgates,
@@ -105,8 +99,7 @@ struct Simulation
 					    const list<ParallelGates>& pgates_list_seq);
   ParallelGates FixParallelGatesAndUpdateCircuit(list<ParallelGates>::iterator& it_pgates,
 						 list<ParallelGates>& circuit,
-						 const Architecture& architecture,
-						 Mapping& mapping, Cores& cores);
+						 const Architecture& architecture);
 
   void freeUnusedAncillas(list<ParallelGates>::iterator it_pgates,
 			  const list<ParallelGates>& circuit,

@@ -11,13 +11,10 @@
 #include <cassert>
 #include "utils.h"
 #include "architecture.h"
-#include "gate.h"
 #include "core.h"
 #include "circuit.h"
-#include "communication.h"
 #include "mapping.h"
 #include "statistics.h"
-#include "communication_time.h"
 #include "noc.h"
 #include "parameters.h"
 #include "simulation.h"
@@ -45,15 +42,18 @@ int main(int argc, char* argv[])
       cerr << "Error reading circuit file " << circuit_fn << endl;
       return ERR_CIRC_FILE;
     }
-  
-  Architecture architecture;
+
+  NoC noc;
+  Mapping mapping;
+  Cores cores(mapping);
+  Architecture architecture(cores, noc);
   if (!architecture.readFromFile(architecture_fn))
     {
       cerr << "Error reading architecture file " << architecture_fn << endl;
       return ERR_ARCH_FILE;
     }
   
-  Parameters parameters;
+  Parameters parameters(noc);
   if (!parameters.readFromFile(parameters_fn))
     {
       cerr << "Error reading parameters file " << parameters_fn << endl;
@@ -62,6 +62,15 @@ int main(int argc, char* argv[])
 
   overrideParameters(params_override, architecture, parameters);
 
+  // IMPORTANT: The following initializations go in this exact order -
+  // Do not change order
+  noc.initializeTokenOwnerMap();
+  cores.mapping.initMapping(circuit.number_of_qubits,
+			    architecture.number_of_cores, architecture.mapping_type);
+  cores.initCores(architecture.number_of_cores, architecture.qubits_per_core);
+
+  // Display info: banner, commandline, circuit, architecture,
+  // parameters
   showBanner();
 
   showCommandLine(argc, argv);
@@ -70,20 +79,11 @@ int main(int argc, char* argv[])
   architecture.display();
   parameters.display();
 
-  NoC noc(architecture.mesh_x, architecture.mesh_y, architecture.link_width, parameters.noc_clock_time,
-	  ceil(log2(architecture.qubits_per_core * architecture.number_of_cores)));
-  if (architecture.wireless_enabled)
-    noc.enableWiNoC(parameters.wbit_rate, architecture.radio_channels, parameters.token_pass_time);
-      
-  noc.display();
-  
-  Mapping mapping(circuit.number_of_qubits, architecture.number_of_cores, architecture.mapping_type);
-
-  Cores cores(architecture, mapping);
-  cores.display();
-  
+  // Run simulation
   Simulation simulation;
   Statistics stats = simulation.simulate(circuit, architecture, noc, parameters, mapping, cores);
+
+  // Display statistics
   simulation.display();
   
   stats.display(cores, architecture, parameters);

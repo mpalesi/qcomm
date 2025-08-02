@@ -16,6 +16,9 @@
 
 using namespace std;
 
+#define WIRELESS_MAC_TOKEN 0
+#define WIRELESS_MAC_LPT   1
+
 struct NoC
 {
   int    mesh_x, mesh_y;
@@ -25,14 +28,15 @@ struct NoC
   double wbit_rate;
   int    radio_channels;
   double token_pass_time;
-  
+  int    wireless_mac;
   bool   winoc;
   mutable vector<int> token_owner_map; // token_owner_map[rc] gives the core_id
 			       // enabled to use the radio channel rc
 
   
-  NoC(int _mesh_x, int _mesh_y, int _link_width, double _hop_time, int _qubits_per_core);
+  NoC() {}
 
+  
   void initializeTokenOwnerMap();
 
   // returns the first available radio channel for src_node, -1 if

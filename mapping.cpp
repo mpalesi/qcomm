@@ -16,7 +16,7 @@
 #include "mapping.h"
 
 
-Mapping::Mapping(const int nqubits, const int ncores, const int mapping_type)
+void Mapping::initMapping(const int nqubits, const int ncores, const int mapping_type)
 {
   if (mapping_type == MAP_SEQUENTIAL)
     qubit2core = this->sequentialMapping(nqubits, ncores);
