@@ -8,11 +8,13 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 #include <vector>
 #include <cstdlib>
 #include <random>
 #include <chrono>
 #include <algorithm>
+#include "utils.h"
 #include "mapping.h"
 
 
@@ -23,8 +25,9 @@ void Mapping::initMapping(const int nqubits, const int ncores, const int mapping
   else if (mapping_type == MAP_RANDOM)
     qubit2core = this->randomMapping(nqubits, ncores);
   else {
-    cerr << "Invalid mapping type" << endl;
-    assert(false);
+    ostringstream oss;
+    oss << "Invalid mapping type.";
+    FATAL(oss.str());
   }
 }
 

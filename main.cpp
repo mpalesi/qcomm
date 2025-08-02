@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <map>
-#include <cassert>
 #include "utils.h"
 #include "architecture.h"
 #include "core.h"

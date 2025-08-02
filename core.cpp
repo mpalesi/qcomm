@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 #include "utils.h"
 #include "core.h"
 
@@ -23,8 +24,9 @@ void Cores::initCores(const int number_of_cores, const int qubits_per_core)
     {
       if (!mapping.isMapped(qb))
 	{
-	  cerr << "Error: qubit " << qb << " is not mapped!" << endl;
-	  assert(false);
+	  ostringstream oss;
+	  oss << "qubit " << qb << " is not mapped!";
+	  FATAL(oss.str());
 	}
       int core_no = mapping.qubit2core.at(qb);
       
@@ -32,9 +34,10 @@ void Cores::initCores(const int number_of_cores, const int qubits_per_core)
       
       if ((int)cores[core_no].size() > qubits_per_core)
 	{
-	  cerr << "Error: Number of qubits mapped on core " << core_no
-	       << " exceeds its capacity." << endl;
-	  assert(false);
+	  ostringstream oss;
+	  oss << "Number of qubits mapped on core " << core_no
+	      << " exceeds its capacity.";
+	  FATAL(oss.str());
 	}
     }
 }

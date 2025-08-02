@@ -7,6 +7,7 @@
 // =============================================================================
 
 #include <iostream>
+#include <cstdlib>
 #include <ctime>
 #include <sstream>
 #include <random>
@@ -27,6 +28,14 @@ void showBanner()
 #        Email: maurizio.palesi@unict.it
 #        GitHub: https://github.com/mpalesi/qcomm
 )" << endl;
+}
+
+//----------------------------------------------------------------------
+void fatalError(const string& message, const char* file, const char* func, int line)
+{
+  cerr << "Fatal error: " << message << endl;
+  cerr << "Location: " << file << ":" << line << " in " << func << "()" << endl;
+  exit(ERR_FATAL);  // Graceful termination with error code
 }
 
 //----------------------------------------------------------------------

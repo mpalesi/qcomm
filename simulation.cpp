@@ -7,6 +7,7 @@
 // =============================================================================
 
 #include <iostream>
+#include <sstream>
 #include <cassert>
 #include <cmath>
 #include "utils.h"
@@ -289,7 +290,8 @@ Statistics Simulation::remoteExecution(const Architecture& architecture, const N
 		      else
 			{
 			  if (first_gate_to_map)
-			    assert(false); // at least the first gate of the parallel_gates must be mapped!
+			    FATAL("at least the first gate of the parallel_gates must be mapped!");
+			  			  
 			  skip_this_gate = true;
 			  break;
 			}
@@ -653,7 +655,10 @@ vector<int> Simulation::computeTPPath(const int qubit_src, const int qubit_dst,
   if (architecture.teleportation_type == TP_TYPE_MESH)
     return computeTPPathMesh(qubit_src, qubit_dst, architecture);
   else
-    assert(false);
+    {
+      FATAL("teleportation_type is not TP_TYPE_MESH");
+      return {}; // dummy return
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -663,8 +668,9 @@ int Simulation::allocateAncilla(const int core_id,
   
   if (!architecture.cores.allocateAncilla(core_id, architecture.qubits_per_core, ancilla))
     {
-      cerr << "Cannot allocate ancilla on core " << core_id << endl;
-      assert(false);
+      ostringstream oss;
+      oss << "Cannot allocate ancilla on core " << core_id;
+      FATAL(oss.str());
     }
 
   return ancilla;
