@@ -51,7 +51,24 @@ struct NoC
   double getCommunicationTime(const ParallelCommunications& pc) const;
 
   double getCommunicationTimeWired(const ParallelCommunications& pc) const;
-  double getCommunicationTimeWireless(const ParallelCommunications& pc) const; // standard token based MAC
+
+  // Main wireless MAC which calls the appropriate wireless MAC
+  double getCommunicationTimeWireless(const ParallelCommunications& pc) const; 
+
+  // Simulate a token-passing mechanism. There are as many tokens as
+  // there are radio channels. The tokens circulate sequentially among
+  // the wireless interfaces (WIs). A WI holding a token is allowed to
+  // use the corresponding radio channel and may retain it for the
+  // entire duration of its transmission. After the transmission, the
+  // token is passed to the next WI in the sequence. The act of
+  // passing the token introduces a delay, referred to as
+  // token_pass_time.
+  double getCommunicationTimeWirelessToken(const ParallelCommunications& pc) const; // standard token based MAC
+
+  // Assign transmissions to channels to minimize the makespan (i.e.,
+  // the time when the last channel finishes).  Longest Processing Time
+  // First (LPT) heuristic Sort comms in descending duration
+  // (transmission time), then assign to channel with min current load
   double getCommunicationTimeWirelessLTP(const ParallelCommunications& pcomms) const; // LPT based MAC
 
   int routingXY(const int src_core, const int dst_core) const;

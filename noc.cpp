@@ -252,12 +252,6 @@ void NoC::advanceTokensAndUpdateTimeLine(vector<double>& timeline) const
     }
 }
 
-// Input:
-
-// Assign transmissions to channels to minimize the makespan (i.e.,
-// the time when the last channel finishes).  Longest Processing Time
-// First (LPT) heuristic Sort comms in descending duration
-// (transmission time), then assign to channel with min current load
 double NoC::getCommunicationTimeWirelessLTP(const ParallelCommunications& pcomms) const
 {
   // 1. sort the communication in descending order based on volume
@@ -282,17 +276,9 @@ double NoC::getCommunicationTimeWirelessLTP(const ParallelCommunications& pcomms
   
   return *max_it / wbit_rate;
 }
-					    
-double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
+
+double NoC::getCommunicationTimeWirelessToken(const ParallelCommunications& pcomms) const
 {
-  // Simulate a token-passing mechanism. There are as many tokens as
-  // there are radio channels. The tokens circulate sequentially among
-  // the wireless interfaces (WIs). A WI holding a token is allowed to
-  // use the corresponding radio channel and may retain it for the
-  // entire duration of its transmission. After the transmission, the
-  // token is passed to the next WI in the sequence. The act of
-  // passing the token introduces a delay, referred to as
-  // token_pass_time.
   vector<double> timeline(radio_channels, 0.0);
   ParallelCommunications pc = pcomms;
   while (!pc.empty())
@@ -329,6 +315,17 @@ double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) c
 }
 
  
+double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) const
+{
+  if (wireless_mac == WIRELESS_MAC_TOKEN)
+    return getCommunicationTimeWirelessToken(pcomms);
+  else if (wireless_mac == WIRELESS_MAC_LPT)
+    return getCommunicationTimeWirelessLTP(pcomms);
+  else
+    FATAL("undefined wireless_mac");
+
+  return -1; // dummy return
+}
 
 double NoC::getCommunicationTime(const ParallelCommunications& pcomms) const
 {

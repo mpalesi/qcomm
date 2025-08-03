@@ -28,18 +28,7 @@
 
 using namespace std;
 
-/**
- * @brief Reports a fatal error with contextual information and exits the program.
- *
- * This function prints a custom error message along with the file name,
- * function name, and line number where the error occurred. It then terminates
- * the program using exit(1), indicating an abnormal termination to the OS.
- *
- * @param message Custom error message describing the failure
- * @param file    The name of the source file (__FILE__)
- * @param func    The name of the function (__func__)
- * @param line    The line number in the source file (__LINE__)
- */
+// Reports a fatal error with contextual information and exits the program
 void fatalError(const string& message, const char* file, const char* func, int line);
 
 // Show the banner
