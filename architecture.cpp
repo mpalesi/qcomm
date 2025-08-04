@@ -69,12 +69,12 @@ bool Architecture::readFromFile(const string& file_name)
   result &= getOrFail<int>(config, "dst_selection_mode", file_name, dst_selection_mode);
   result &= getOrFail<int>(config, "mapping_type", file_name, mapping_type);
   
-  updateDerivedVariables();
+  computeDerivedVariables();
   
   return result;
 }
 
-void Architecture::updateDerivedVariables()
+void Architecture::computeDerivedVariables()
 {
   number_of_cores = noc.mesh_x * noc.mesh_y;
   total_physical_qubits = number_of_cores * qubits_per_core;
@@ -85,13 +85,13 @@ void Architecture::updateDerivedVariables()
 void Architecture::updateMeshX(const int nv)
 {
   noc.mesh_x = nv;
-  updateDerivedVariables();
+  computeDerivedVariables();
 }
 
 void Architecture::updateMeshY(const int nv)
 {
   noc.mesh_y = nv;
-  updateDerivedVariables();
+  computeDerivedVariables();
 }
 
 void Architecture::updateLinkWidth(const int nv)
@@ -102,6 +102,7 @@ void Architecture::updateLinkWidth(const int nv)
 void Architecture::updateQubitsPerCore(const int nv)
 {
   qubits_per_core = nv;
+  computeDerivedVariables();
 }
 
 void Architecture::updateLTMPorts(const int nv)

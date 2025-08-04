@@ -214,11 +214,6 @@ double NoC::getCommunicationTimeWired(const ParallelCommunications& pcomms) cons
 
 void NoC::initializeTokenOwnerMap()
 {
-  // Initialize token_owner_map (tom) in such a way tokens are equally
-  // distributed among the cores
-  // Examples: 4 cores, 1 radio channel: tom[0] = 0
-  //           4 cores, 2 radio channels: tom[0] = 0, tom[1] = 2
-  //           4 cores, 3 radio channels: tom[s0] = 0, tom[1] = 1, tom[2] = 2
   token_owner_map.resize(radio_channels);
   int ncores = mesh_x * mesh_y;
   int step = ncores / radio_channels;

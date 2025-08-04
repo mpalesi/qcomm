@@ -36,13 +36,18 @@ struct Architecture
   NoC&    noc;
   
   Architecture(Cores& cores_ref, NoC& noc_ref) : cores(cores_ref), noc(noc_ref) {}
-  
+
+  // Display architecture configuration including cores and NoC to the
+  // stdout in YAML format
   void display() const;
 
   // Read the architecture from a YAML file. Returns true if success,
   // 0 otherwise
   bool readFromFile(const string& file_name); 
 
+  // update* methods are used by overrideParameters function in
+  // command_line.cpp to set the value of parameters directly in the
+  // command line
   void updateMeshX(const int nv);
   void updateMeshY(const int nv);
   void updateLinkWidth(const int nv);
@@ -55,7 +60,12 @@ struct Architecture
   void updateDstSelectionMode(const int nv);
   void updateMappingType(const int nv);
 
-  void updateDerivedVariables();
+  // There are some attributes like number_of_cores and
+  // total_physical_qubits that are not directly specified in the
+  // architecture YAML file but can be derived from other parameters
+  // specified in the YAML file. The method computeDerivedVariables
+  // takes care of computing such drivd attributes.
+  void computeDerivedVariables();
 };
 
 #endif
