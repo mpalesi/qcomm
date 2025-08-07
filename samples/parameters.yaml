@@ -1,4 +1,3 @@
-gate_delay: 15e-9 # sec
 epr_delay: 1e-6  # sec
 dist_delay: 0.01e-9  # sec
 pre_delay: 390e-9  # sec
