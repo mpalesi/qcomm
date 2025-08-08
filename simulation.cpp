@@ -14,7 +14,7 @@
 #include "simulation.h"
 #include "gate.h"
 #include "communication.h"
-#include "communication_time.h"
+#include "teleportation_time.h"
 
 using namespace std;
 
@@ -187,30 +187,30 @@ void Simulation::addParallelCommunications(ParallelCommunications& parallel_comm
 }
 
 // ----------------------------------------------------------------------
-CommunicationTime Simulation::getCommunicationTime(const ParallelCommunications& pcomms,
+TeleportationTime Simulation::getTeleportationTime(const ParallelCommunications& pcomms,
 						   const NoC& noc,
 						   const Parameters& params)
 {
-  CommunicationTime ct;
+  TeleportationTime tt;
 
-  ct.t_epr = params.epr_delay;
-  ct.t_dist = params.dist_delay;
-  ct.t_pre = params.pre_delay;
-  ct.t_clas = noc.getCommunicationTime(pcomms);
-  ct.t_post = params.post_delay;
+  tt.t_epr = params.epr_delay;
+  tt.t_dist = params.dist_delay;
+  tt.t_pre = params.pre_delay;
+  tt.t_clas = noc.getCommunicationTime(pcomms);
+  tt.t_post = params.post_delay;
   
-  return ct;
+  return tt;
 }
 
 // ----------------------------------------------------------------------
-void Simulation::addCommunicationTime(CommunicationTime& total_ct,
-				      const CommunicationTime& ct)
+void Simulation::addTeleportationTime(TeleportationTime& total_tt,
+				      const TeleportationTime& tt)
 {
-  total_ct.t_epr  += ct.t_epr;
-  total_ct.t_dist += ct.t_dist;
-  total_ct.t_pre  += ct.t_pre;
-  total_ct.t_clas += ct.t_clas;
-  total_ct.t_post += ct.t_post;
+  total_tt.t_epr  += tt.t_epr;
+  total_tt.t_dist += tt.t_dist;
+  total_tt.t_pre  += tt.t_pre;
+  total_tt.t_clas += tt.t_clas;
+  total_tt.t_post += tt.t_post;
 }
 
 // ----------------------------------------------------------------------
@@ -226,9 +226,9 @@ void Simulation::updateRemoteExecutionStats(Statistics& stats,
 
   stats.intercore_volume += getTotalCommunicationVolume(pcomms);
     
-  CommunicationTime comm_time = getCommunicationTime(pcomms, noc, params);
+  TeleportationTime tp_time = getTeleportationTime(pcomms, noc, params);
   				       
-  addCommunicationTime(stats.communication_time, comm_time);
+  addTeleportationTime(stats.teleportation_time, tp_time);
 
   stats.addIntercoreCommunications(pcomms);
   
@@ -334,7 +334,7 @@ Statistics Simulation::mergeLocalRemoteStatistics(const Statistics& stats_local,
   stats.intercore_comms = stats_remote.intercore_comms;
   stats.intercore_volume = stats_remote.intercore_volume;
   
-  stats.communication_time = stats_remote.communication_time;
+  stats.teleportation_time = stats_remote.teleportation_time;
   stats.computation_time = (stats_local.computation_time > stats_remote.computation_time) ?
     stats_local.computation_time : stats_remote.computation_time;
 

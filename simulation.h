@@ -38,11 +38,11 @@ struct Simulation
 				 const Gate& gate, const int dst_core,
 				 const Mapping& mapping, const int volume);
   
-  CommunicationTime getCommunicationTime(const ParallelCommunications& pcomms,
+  TeleportationTime getTeleportationTime(const ParallelCommunications& pcomms,
 					 const NoC& noc,
 					 const Parameters& params);
-  void addCommunicationTime(CommunicationTime& total_ct,
-			    const CommunicationTime& ct);
+  void addTeleportationTime(TeleportationTime& total_ct,
+			    const TeleportationTime& ct);
   void updateRemoteExecutionStats(Statistics& stats,
 				  const ParallelGates& pgates,
 				  const ParallelCommunications& pcomms,

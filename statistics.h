@@ -16,7 +16,7 @@
 #include "circuit.h"
 #include "architecture.h"
 #include "parameters.h"
-#include "communication_time.h"
+#include "teleportation_time.h"
 #include "communication.h"
 
 
@@ -25,7 +25,7 @@ struct Statistics
   int executed_gates;
   int total_intercore_comms;
   int intercore_volume;
-  CommunicationTime communication_time;
+  TeleportationTime teleportation_time;
   double computation_time;
   double avg_throughput, max_throughput;
   int    samples;

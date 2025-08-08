@@ -40,7 +40,7 @@ Statistics::Statistics(const int ncores) : Statistics()
 
 double Statistics::getExecutionTime() const
 {
-  return (computation_time + communication_time.getTotalTime() + fetch_time + decode_time + dispatch_time);
+  return (computation_time + teleportation_time.getTotalTeleportationTime() + fetch_time + decode_time + dispatch_time);
 }
 
 
@@ -133,7 +133,7 @@ void Statistics::display(const Cores& cores, const Architecture& arch,
       displayTeleportationsPerQubit();
     }
   
-  communication_time.display(IND);
+  teleportation_time.display(IND);
   
   double execution_time = getExecutionTime();
   cout << IND << "computation_time: " << computation_time << " # sec" << endl
@@ -151,11 +151,11 @@ void Statistics::updateStatistics(const Statistics& stats)
   intercore_volume += stats.intercore_volume;
   computation_time += stats.computation_time;
   
-  communication_time.t_epr += stats.communication_time.t_epr;
-  communication_time.t_dist += stats.communication_time.t_dist;
-  communication_time.t_pre += stats.communication_time.t_pre;
-  communication_time.t_clas += stats.communication_time.t_clas;
-  communication_time.t_post += stats.communication_time.t_post;
+  teleportation_time.t_epr += stats.teleportation_time.t_epr;
+  teleportation_time.t_dist += stats.teleportation_time.t_dist;
+  teleportation_time.t_pre += stats.teleportation_time.t_pre;
+  teleportation_time.t_clas += stats.teleportation_time.t_clas;
+  teleportation_time.t_post += stats.teleportation_time.t_post;
 
   fetch_time += stats.fetch_time;
   decode_time += stats.decode_time;
