@@ -65,13 +65,13 @@ void overrideParameters(const map<string,string>& params_override,
       else if (param == "wireless_enabled")
 	arch.updateWirelessEnabled(stoi(value));
       else if (param == "teleportation_type")
-	arch.updateTeleportationType(stod(value));
+	arch.updateTeleportationType(stoi(value));
       else if (param == "wireless_mac")
-	arch.updateWirelessMAC(stod(value));
+	arch.updateWirelessMAC(stoi(value));
       else if (param == "dst_selection_mode")
-	arch.updateDstSelectionMode(stod(value));
+	arch.updateDstSelectionMode(stoi(value));
       else if (param == "mapping_type")
-	arch.updateMappingType(stod(value));
+	arch.updateMappingType(stoi(value));
       else if (param == "epr_delay")
 	params.updateEPRDelay(stod(value));
       else if (param == "dist_delay")
@@ -95,7 +95,9 @@ void overrideParameters(const map<string,string>& params_override,
       else if (param == "t1")
 	params.updateThermalRelaxationTime(stod(value));
       else if (param == "stats_detailed")
-	params.updateStatsDetailed(stod(value));
+	params.updateStatsDetailed(stoi(value));
+      else if (param == "qscale_factor")
+	params.updateQScaleFactor(stod(value));
       else
 	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
     }

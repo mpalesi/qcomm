@@ -1,4 +1,14 @@
+# EPR generation delay
+# * NetSquid simulator and related studies often use
+#   entanglement generation time: 100 µs - 1 ms
+# * Some system-level simulators (e.g., SeQUeNCe, SimulaQron) 
+#   assume ~250 µs
+# * Superconducting transmons (microwave entanglement) <1 µs
+#   Kurpiers et al., “Deterministic quantum state transfer and 
+#   entanglement between remote superconducting qubits”, 
+#   Nature, 2018. [DOI: 10.1038/s41586-018-0195-y]
 epr_delay: 1e-6  # sec
+
 dist_delay: 0.01e-9  # sec
 pre_delay: 390e-9  # sec
 post_delay: 30e-9  # sec
@@ -57,3 +67,5 @@ gate_delays: # sec
   # Three-Qubit Gate (3 inputs)
   CCNOT: 500e-9 # Toffoli
   CSWAP: 700e-9 # Controlled SWAP
+
+qscale_factor: 1.0 # quantum scaling factor

@@ -61,6 +61,9 @@ int main(int argc, char* argv[])
 
   overrideParameters(params_override, architecture, parameters);
 
+  // Update the quantum related parameters based on the qscale_factor
+  parameters.scaleQuantumRelatedParameters();
+
   // IMPORTANT: The following initializations go in this exact order -
   // Do not change order
   noc.initializeTokenOwnerMap();
@@ -68,6 +71,7 @@ int main(int argc, char* argv[])
 			    architecture.number_of_cores, architecture.mapping_type);
   cores.initCores(architecture.number_of_cores, architecture.qubits_per_core);
 
+  
   // Display info: banner, commandline, circuit, architecture,
   // parameters
   showBanner();

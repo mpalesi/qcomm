@@ -27,7 +27,12 @@ struct Parameters
   double decode_time_per_instruction;
   double t1; // thermal relaxation time
   bool   stats_detailed;
-  
+
+  // quantum scaling factor: all the quantum related parameters are
+  // multiplied by qscale_factor before being used. This is useful to
+  // simpplify the analysis of technological trends
+  // NOTE: It does not affect t1
+  double qscale_factor;
 
   NoC&   noc;
   
@@ -50,7 +55,11 @@ struct Parameters
   void updateDecodeTime(const double nv);
   void updateThermalRelaxationTime(const double nv);
   void updateStatsDetailed(const bool nv);
+  void updateQScaleFactor(const double nv);
 
+  // update the quantum related parameters by taking into account the
+  // qscale_factor
+  void scaleQuantumRelatedParameters();
 };
 
 #endif
