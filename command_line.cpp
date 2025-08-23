@@ -7,6 +7,8 @@
 // =============================================================================
 
 #include <iostream>
+#include <sstream>
+#include "utils.h"
 #include "command_line.h"
 
 using namespace std;
@@ -98,7 +100,12 @@ void overrideParameters(const map<string,string>& params_override,
 	params.updateStatsDetailed(stoi(value));
       else if (param == "qscale_factor")
 	params.updateQScaleFactor(stod(value));
-      else
-	cout << ">>> Unrecognized parameter '" << param << "' is ignored!" << endl;
+      else if (param == "seed")
+	params.updateSeed(stoi(value));
+      else {
+	ostringstream oss;
+	oss << "Unrecognized parameter '" << param << "'.";
+	FATAL(oss.str());
+      }
     }
 }

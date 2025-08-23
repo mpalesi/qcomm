@@ -68,7 +68,8 @@ int main(int argc, char* argv[])
   // Do not change order
   noc.initializeTokenOwnerMap();
   cores.mapping.initMapping(circuit.number_of_qubits,
-			    architecture.number_of_cores, architecture.mapping_type);
+			    architecture.number_of_cores,
+			    architecture.mapping_type, parameters.seed);
   cores.initCores(architecture.number_of_cores, architecture.qubits_per_core);
 
   

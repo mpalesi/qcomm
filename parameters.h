@@ -18,16 +18,17 @@ using namespace std;
 struct Parameters
 {
   map<string,double> gate_delays; // <gate name, delay>
-  double epr_delay;
-  double dist_delay;
-  double pre_delay;
-  double post_delay;
-  double memory_bandwidth; // bits/sec
-  int    bits_instruction; // number of bits used for encoding an instruction
-  double decode_time_per_instruction;
-  double t1; // thermal relaxation time
-  bool   stats_detailed;
-
+  double   epr_delay;
+  double   dist_delay;
+  double   pre_delay;
+  double   post_delay;
+  double   memory_bandwidth; // bits/sec
+  int      bits_instruction; // number of bits used for encoding an instruction
+  double   decode_time_per_instruction;
+  double   t1; // thermal relaxation time
+  bool     stats_detailed;
+  unsigned seed; // seed used for random number generator
+  
   // quantum scaling factor: all the quantum related parameters are
   // multiplied by qscale_factor before being used. This is useful to
   // simpplify the analysis of technological trends
@@ -56,7 +57,8 @@ struct Parameters
   void updateThermalRelaxationTime(const double nv);
   void updateStatsDetailed(const bool nv);
   void updateQScaleFactor(const double nv);
-
+  void updateSeed(const unsigned nv);
+  
   // update the quantum related parameters by taking into account the
   // qscale_factor
   void scaleQuantumRelatedParameters();

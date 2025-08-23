@@ -1,3 +1,5 @@
+seed: 0 # seed used by random number generator (0 = chrono)
+
 # EPR generation delay
 # * NetSquid simulator and related studies often use
 #   entanglement generation time: 100 µs - 1 ms
@@ -13,7 +15,7 @@ dist_delay: 0.01e-9  # sec
 pre_delay: 390e-9  # sec
 post_delay: 30e-9  # sec
 wbit_rate: 12e9  # bps
-token_pass_time: 1e-9  # sec
+token_pass_time: 10e-9  # sec
 memory_bandwidth: 128e9  # bps
 bits_instruction: 4 # number of bits used for encoding an instruction
 decode_time_per_instruction: 10e-9 # sec

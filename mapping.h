@@ -19,15 +19,19 @@ using namespace std;
 struct Mapping
 {
   map<int,int> qubit2core; // Indicates where a qubit is mapped onto which core
-
+  
   Mapping() {}
 
-  void initMapping(const int nqubits, const int ncores, const int mapping_type);
+  void initMapping(const int nqubits, const int ncores,
+		   const int mapping_type, const unsigned seed);
 
   void display();
 
   map<int,int> sequentialMapping(const int nqubits, const int ncores);
-  map<int,int> randomMapping(const int nqubits, const int ncores);
+
+  // chrono seed if 'seed' is 0
+  map<int,int> randomMapping(const int nqubits, const int ncores,
+			     const unsigned seed);
 
   bool isMapped(const int qb) const;
   int qubit2CoreSafe(const int qb) const;

@@ -12,18 +12,18 @@
 #include <vector>
 #include <cstdlib>
 #include <random>
-#include <chrono>
 #include <algorithm>
 #include "utils.h"
 #include "mapping.h"
 
 
-void Mapping::initMapping(const int nqubits, const int ncores, const int mapping_type)
+void Mapping::initMapping(const int nqubits, const int ncores,
+			  const int mapping_type, const unsigned seed)
 {
   if (mapping_type == MAP_SEQUENTIAL)
     qubit2core = this->sequentialMapping(nqubits, ncores);
   else if (mapping_type == MAP_RANDOM)
-    qubit2core = this->randomMapping(nqubits, ncores);
+    qubit2core = this->randomMapping(nqubits, ncores, seed);
   else {
     ostringstream oss;
     oss << "Invalid mapping type.";
@@ -59,9 +59,10 @@ map<int,int> Mapping::sequentialMapping(const int nqubits, const int ncores)
   return q2c;
 }
 
-map<int,int> Mapping::randomMapping(const int nqubits, const int ncores)
+map<int,int> Mapping::randomMapping(const int nqubits, const int ncores,
+				    const unsigned seed)
 {
-  srand(time(0));
+  //  srand(time(0));
 
   map<int, int> mapping;
   vector<int>   cores(nqubits);
@@ -70,7 +71,6 @@ map<int,int> Mapping::randomMapping(const int nqubits, const int ncores)
     cores[i] = i % ncores;
     
 
-  unsigned seed = chrono::high_resolution_clock::now().time_since_epoch().count();
   mt19937 gen(seed);
   shuffle(cores.begin(), cores.end(), gen);
 

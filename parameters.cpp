@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 #include <yaml-cpp/yaml.h>
 #include "utils.h"
 #include "parameters.h"
@@ -31,6 +32,7 @@ void Parameters::display() const
 {
   cout << endl
        << "Parameters:" << endl
+       << IND << "seed: " << seed << endl
        << IND << "qscale_factor: " << qscale_factor << endl
        << IND << "gate_delays: ";
   displayGateDelays();
@@ -63,6 +65,12 @@ bool Parameters::readFromFile(const string& file_name)
   result &= getOrFail<double>(config, "t1", file_name, t1);
   result &= getOrFail<bool>(config, "stats_detailed", file_name, stats_detailed);
   result &= getOrFail<double>(config, "qscale_factor", file_name, qscale_factor);
+
+  // Set seed used for random number generator. If seed==0, it is set
+  // to the current time
+  result &= getOrFail<unsigned>(config, "seed", file_name, seed);
+  if (seed == 0)
+    seed = chrono::high_resolution_clock::now().time_since_epoch().count();
   
   return result;
 }
@@ -130,6 +138,11 @@ void Parameters::updateStatsDetailed(const bool nv)
 void Parameters::updateQScaleFactor(const double nv)
 {
   qscale_factor = nv;
+}
+
+void Parameters::updateSeed(const unsigned nv)
+{
+  seed = nv;
 }
 
 void Parameters::scaleQuantumRelatedParameters()
