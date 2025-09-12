@@ -101,7 +101,7 @@ void overrideParameters(const map<string,string>& params_override,
       else if (param == "qscale_factor")
 	params.updateQScaleFactor(stod(value));
       else if (param == "seed")
-	params.updateSeed(stoi(value));
+	params.updateSeed(stoul(value));
       else {
 	ostringstream oss;
 	oss << "Unrecognized parameter '" << param << "'.";
