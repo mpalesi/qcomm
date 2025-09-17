@@ -161,4 +161,31 @@ void Circuit::generateCircuit(const int nqubits, const int ngates,
   number_of_qubits = nqubits;
   number_of_gates = ngates;
   number_of_stages = nstages;
+
+  fixCircuit();
+}
+
+void Circuit::fixCircuit()
+{
+  // search for the minimum qubit
+  int min_qubit = numeric_limits<int>::max();
+  for (const auto& pg : circuit) {
+    for (const auto& gate : pg) {
+      for (int qubit : gate.second) {
+	if (qubit < min_qubit) {
+	  min_qubit = qubit;
+	}
+      }
+    }
+  }
+
+  // if min_qubit is different than zero, update the qubits in such a
+  // way the minimum qubit becomes 0
+  for (auto& pg : circuit) {
+    for (auto& gate : pg) {
+      for (int& qubit : gate.second) {
+	  qubit -= min_qubit;
+	}
+    }
+  }
 }

@@ -28,6 +28,9 @@ struct Circuit
 
   void generateCircuit(const int nqubits, const int ngates,
 		       const vector<float>& gateprob);
+
+  // Circuit is fixed in such a way qubit 0 is always present
+  void fixCircuit();
 };
 
 #endif
