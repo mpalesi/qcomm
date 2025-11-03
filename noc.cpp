@@ -34,8 +34,8 @@ void NoC::display()
       
       if (wireless_mac == WIRELESS_MAC_TOKEN)
 	cout << " # token passing" << endl;
-      else if (wireless_mac == WIRELESS_MAC_LPT)
-	cout << " # LPT (longest processing time)" << endl;
+      else if (wireless_mac == WIRELESS_MAC_ID)
+	cout << " # ID (instruction-directed MAC)" << endl;
       else
 	cout << " # ??\?" << endl;
     }
@@ -314,7 +314,7 @@ double NoC::getCommunicationTimeWireless(const ParallelCommunications& pcomms) c
 {
   if (wireless_mac == WIRELESS_MAC_TOKEN)
     return getCommunicationTimeWirelessToken(pcomms);
-  else if (wireless_mac == WIRELESS_MAC_LPT)
+  else if (wireless_mac == WIRELESS_MAC_ID)
     return getCommunicationTimeWirelessLTP(pcomms);
   else
     FATAL("undefined wireless_mac");

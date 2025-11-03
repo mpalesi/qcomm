@@ -16,8 +16,8 @@
 
 using namespace std;
 
-#define WIRELESS_MAC_TOKEN 0
-#define WIRELESS_MAC_LPT   1
+#define WIRELESS_MAC_TOKEN 0 // token-based MAC 
+#define WIRELESS_MAC_ID    1 // instruction-directed MAC
 
 struct NoC
 {
